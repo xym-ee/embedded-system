@@ -11,4 +11,12 @@ https://www.zhihu.com/question/19688487/answer/32217959
 如果不是学计算机的，那么忘了嵌入式，先学习计算机。
 
 
+- arm cortex-m3内核
+  - 指令集
+  - 编程结构
+  - STM32F103处理器
+
+- 嵌入式操作系统
+  - rt-thread
+
 
