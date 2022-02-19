@@ -1,7 +1,7 @@
 ---
 sort: 1
 ---
-# ARM Cortex-M3处理器
+# Cortex-M3处理器
 
 Cortex-M3处理器是MCU的CPU，完成的MCU还需要其他组件，不同厂家拿上这个CPU加上自己的东西一起封装在一个硅片内，形成了一个MCU。
 

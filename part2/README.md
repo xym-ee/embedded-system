@@ -1,6 +1,6 @@
 ---
 sort: 2
 ---
-# RT-Thread使用
+# MCU启动与RT-Thread使用
 
 
