@@ -1,8 +1,11 @@
 
+![GitHub last commit](https://badgen.net/github/last-commit/Meng2025/embedded-system/main)
+![Github commits](https://badgen.net/github/commits/Meng2025/embedded-system/main)
+![no problems](https://badgen.net/badge/no%20problem/(maybe)/red)
+
 嵌入式系统学习。
 
-如何学习嵌入式系统？ - 知乎
-https://www.zhihu.com/question/19688487/answer/32217959
+[如何学习嵌入式系统？ - 知乎](https://www.zhihu.com/question/19688487/answer/32217959)
 
 这个回答下面还有个回答：
 
