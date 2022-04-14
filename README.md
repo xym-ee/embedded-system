@@ -13,13 +13,26 @@
 
 如果不是学计算机的，那么忘了嵌入式，先学习计算机。
 
-
-- arm cortex-m3内核
-  - 指令集
-  - 编程结构
-  - STM32F103处理器
-
-- 嵌入式操作系统
+- ARM架构M3内核
+  - 地址空间 RISC和CISC
+  - ARM内部寄存器
+  - ARM汇编
+  - keil_gcc_Makefile
+  - 代码重定位
+- STM32 HAL库开发
+  - GPIO
+  - RCC
+  - NVIC
+  - Systick
+  - UART
+  - 其他用到了再说
+---
+- RTOS使用，API介绍
   - rt-thread
+  - freeRTOS
+- RTOS原理
+  - rt-thread内部机制
+  - freeRTOS内部机制
+
 
 
