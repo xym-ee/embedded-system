@@ -1,7 +1,7 @@
 ---
 sort: 1
 ---
-# RT-Thread 简介
+# RT-Thread 内核
 
 ```note
 基本上是摘抄RTT官方文档。
