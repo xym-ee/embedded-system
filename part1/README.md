@@ -1,13 +1,7 @@
 ---
 sort: 1
 ---
-# Cortex-M3内核MCU结构与裸机
-
-
-
-
-
-
+# Cortex-M3内核与裸机开发
 
 ARM内核的芯片，Cortex内核，外设，以及STM32整块芯片。
 
