@@ -1,5 +1,5 @@
 ---
-sort: 1
+sort: 2
 ---
 # RT-Thread 多线程
 
