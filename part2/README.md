@@ -1,98 +1,28 @@
 ---
 sort: 2
 ---
-# 基于RT-Thread进行开发
+# 基于 LVGL 学习 C 语言 OOP 思想
 
-先学如何使用rtt操作系统，如何创建线程，实现线程之间的通信，让多任务协同运行，推动系统向前运转。然后再研究内核的实现，线程的调度如何实现，如何把rtt移植到一个新的芯片上。
+## emWin
 
-这部分内容是基于RTT官方的文档。
+emWin属于SEGGER公司下面的一种GUI产品，一种嵌入式GUI解决方案。业界领先的嵌入式图形库，专业的嵌入式GUI。
 
-学完了再来补充更多细节。
+emWin与单任务和多任务环境兼容，可以使用专有的操作系统，也可以与任何商业RTOS兼容。它以C语言源代码提供，使其成为嵌入式市场的专业、通用GUI，可用于多种不同的场景。
 
+## TouchGFX
 
-## RT-Thread 介绍
+TouchGFX属于Draupner Graphics公司的GUI产品，在去年（2018年7月），TouchGFX被ST收购，在STM32上可以免费使用TouchGFX。TouchGFX升级至V4.10，扩展STM32生态系统，并集成在STM32CubeMX中。
 
-首先 RT-Thread 是国内团队开发的，一些文档都是原生中文，很好。
+## MiniGUI
 
-RT-Thread 用 C 语言实现，但是又卖你先对象的设计方法，不仅仅是 RTOS 本身，其设计思想、代码风格、系统架构也是非常值得研究学习的。
+MiniGUI丰富的功能和可配置性使得它既适用于运行在30MHz CPU的低端设备，也适用于使用GPU的高端设备。为嵌入式和智能物联网设备提供一个成熟的、经过验证的跨平台GUI系统。
 
-除了用于传统工业控制领域，这也是个**物联网操作系统**( IoT OS )。
+就在前不久（2019年9月19日），北京飞漫软件技术有限公司宣布：将在 MiniGUI 4.0.2 版本中支持国产物联网操作系统 RT-Thread！
 
-感觉 IoT OS 更像是一些列技术的集合，也没有具体的教科书定义，其指的是含操作系统的、包括文件系统图形库等比较完成的中间组件，具备低功耗、链接云端能力的软件。
-
-FreeRTOS、μC/OS 这两种 RTOS 实际上仅仅有个“内核”， RT-Thread 除了实时内核，还有特别丰富的中间层组件。
-
-
-<figure>
-    <img src = "https://www.rt-thread.org/document/site/rt-thread-version/rt-thread-standard/figures/02Software_framework_diagram.png" width=600 />
-    <figcaption>RT-Thread 架构（官方文档）</figcaption>
-</figure>
-
-- 内核指的是多线程实现、RTOS 使用的接口、内存管理等CPU实现多任务最基础的东西。
-- 组件和服务层在基于内核上，提供了上层的一些软件
-- 软件包是 RT-Thread 的特色，生态的问题
+## Qt
 
 
-## 用户入口
-
-前面是必要的内核启动，对于用户程序，还是经典的 `main()` 函数，这里也能看出前面定义 `$Sub$$main()` 的含义，这是函数标识符，具体可以参考[ARM® Compiler v5.06 for µVision® armlink User Guide](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0377g/pge1362065967698.html)。
-
-
-```c
-int main(void)
-{
-  /* user app entry */
-  return 0;
-}
-```
-
-这么设计符合以前不用RTOS的开发者的习惯，只是用就可以了，不需要关注应用之外的东西。
-
-
-## RTOS 点灯
-
-这是一个线程，
-
-```c
-int led(void)
-{
-    rt_uint8_t count;
-
-    rt_pin_mode(34, PIN_MODE_OUTPUT);  
-    
-    for(count = 0 ; count < 10 ;count++)
-    {       
-        rt_pin_write(LED_PIN, PIN_HIGH);
-        rt_kprintf("led计数 : %d\r\n", count);
-        rt_thread_mdelay(500);
-        
-        rt_pin_write(LED_PIN, PIN_LOW);
-        rt_kprintf("led off\r\n");
-        rt_thread_mdelay(500);
-    }
-    return 0;
-}
-MSH_CMD_EXPORT(led1, LED test);
-```
-
-
-## 目录
-
-这一部分侧重开发，只用接口，理解操作系统的设计思想，并不追求背后的实现。在下一部分要去研究内核的实现。
-
-
-
-- 基于 RTT 的 MCU 开发
-  - RTOS 多线程的思想
-  - 线程管理
-  - 线程同步
-  - 线程通信
-
-
-
-
-
-
+## LVGL
 
 
 
