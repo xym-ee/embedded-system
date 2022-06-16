@@ -22,7 +22,7 @@
 <figure>
   <img src="./assets/images/nvdia.png" width=300 >
   <figcaption>
-  NVDIA 官网对 Jetson 的介绍
+  NVIDIA 官网对 Jetson 的介绍
   </figcaption>
 </figure>
 

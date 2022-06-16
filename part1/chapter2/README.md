@@ -1,7 +1,7 @@
 ---
-sort: 4
+sort: 2
 ---
-# STM32 HAL库开发
+# STM32F系列芯片 HAL 库裸机开发
 
 
 ## ST的官方库
