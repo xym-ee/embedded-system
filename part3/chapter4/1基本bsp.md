@@ -5,13 +5,15 @@ sort: 1
 
 只包含 GPIO 与 FinSH 功能。
 
-复制模板
+复制模板，改成自己的项目名。
 
 ## 1. CubeMX 配置芯片初始化代码
 
+在 `board/CubeMX_Config` 里启动 `CubeMX_Config.ioc`
+
 - 选择芯片型号，关注 RAM 与 Flash 大小
 - Pinout & Configuration 选项卡
-  - System Core 关注 sys 调试接口与 rcc 时钟模块
+  - System Core 关注 sys 里的调试接口与 rcc 时钟模块
   - Connectivity 里打开 uart
   - (可选)配置其他外设
 - Clock Configuration
@@ -22,7 +24,7 @@ sort: 1
     - Location: rt-thread\bsp\stm32\stm32fxxxxxx\board
     - Toolchain/IDE: MDK-ARM
 
-其他默认即可，生成代码后，移动 Core 里的 Src 和 Inc 到外面，关注 MDK-ARM 里 .s 文件的名字。
+其他默认即可，生成代码后，移动 Core 里的 Src 和 Inc 到外面，关注 MDK-ARM 里 `.s` 文件的名字。
 
 ## 2. 芯片时钟初始化与内存配置
 
@@ -33,10 +35,13 @@ sort: 1
 ### board.h 内存参数
 
 ```c
-#define STM32_FLASH_SIZE             (1024 * 1024)
+#define STM32_FLASH_SIZE              (1024 * 1024)
+#define STM32_SRAM_SIZE               128
 ```
 
 ## 4. Kconfig 配置
+
+芯片型号和系列
 
 
 ## 5. IDE 相关配置
