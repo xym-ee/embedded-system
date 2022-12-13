@@ -1,6 +1,6 @@
 
-![GitHub last commit](https://badgen.net/github/last-commit/Meng2025/embedded-system/main)
-![Github commits](https://badgen.net/github/commits/Meng2025/embedded-system/main)
+![GitHub last commit](https://badgen.net/github/last-commit/xym-ee/embedded-system/main)
+![Github commits](https://badgen.net/github/commits/xym-ee/embedded-system/main)
 ![no problems](https://badgen.net/badge/no%20problem/(maybe)/red)
 
 嵌入式系统学习。
