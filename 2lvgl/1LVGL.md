@@ -1,7 +1,7 @@
 ---
 sort: 1
 ---
-# LVGL
+# LVGL 里的 OOP 设计思想
 
 官网：https://lvgl.io/
 

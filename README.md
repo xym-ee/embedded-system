@@ -13,9 +13,132 @@
 
 如果不是学计算机的，那么忘了嵌入式，先学习计算机。
 
+
+## 这个笔记的框架
+
+- MCU 裸机开发
+  - C 语言，硬件操作
+  - STM32 基于 HAL 库开发
+  - NXP RT1052 开发
+- LVGL 与 C 语言基于 OOP 思想开发
+- 基于 RTOS 开发
+  - rt-thread
+  - FreeRTOS
+- ARM 架构(计算机组成原理)
+- rt-thread 原理与实现
+- linux 应用开发
+  - ubuntu使用，shell，vi编辑器
+  - 环境，开发板基本使用
+  - 交叉编译，makefile，文件操作系统调用
+  - 网络编程
+  - 多线程
+- linux 驱动开发
+- 数字逻辑(FPGA)与 RISC-V 架构 
+
+
 ## 嵌入式系统
 
-（2022.6 写的，浅薄理解，边学边更新）
+(2023.4)
+
+MCU 裸机开发、LVGL 以及基于 rt-thread 开发是在面向应用，现称为一个东西的熟练使用者，在去看背后的原理以及实现。个人觉得从刚开始接触 MCU 比如 STM32，到能做出一个简单的电子系统，这个过程有个两三个月足够了，基于 ST 库开发，不同的外设的操作方式实际上是类似的，可能学习GPIO的时候，会跟着教程去细致的看外设内部的原理图，但是一旦用代码操作起来，都是模式化的东西。在能自己独立设计出一个不是那么小的电子系统后，我认为应该再往上走一个层次，去注意软件工程，或者说编码思想方面的东西了，先不着急去做更大的系统。
+
+搞MCU大多是学电气电子或者自动化的同学，写代码很多时候都是猛糙快，讲究个能用就行，如果在熟练使用MCU后停留在这个阶段，对职业发展是不利的。因此我觉得在觉得自己玩熟了MCU，了解了大多数外设后，可以尝试去玩玩一些与外设耦合不那么紧密的代码，比如 LVGL，显示框架本身是硬件无关的，再比如rtthread本身也是，这些大一些的 C 语言项目都是有一套自己的思想以及设计方法在里面的，而且这些东西不仅仅适用于 MCU 平台，举个例子，机器人仿真用的 webots，可以使用 C 语言开发算法，里面的程序表达
+
+```c
+WbDeviceTag left_front_motor = wb_robot_get_device("left_front_motor");
+wb_motor_set_position(left_front_motor,INFINITY);
+wb_motor_set_velocity(left_front_motor,0);
+```
+
+对比 lvgl 里的程序表达
+
+```c
+/*Create a screen*/
+lv_obj_t * scr = lv_obj_create(NULL, NULL);
+lv_scr_load(scr);          /*Load the screen*/
+
+/*Create 2 buttons*/
+lv_obj_t * btn1 = lv_btn_create(scr, NULL);         /*Create a button on the screen*/
+lv_btn_set_fit(btn1, true, true);                   /*Enable automatically setting the size according to content*/
+lv_obj_set_pos(btn1, 60, 40);              	   /*Set the position of the button*/
+
+lv_obj_t * btn2 = lv_btn_create(scr, btn1);         /*Copy the first button*/
+lv_obj_set_pos(btn2, 180, 80);                    /*Set the position of the button*/
+
+/*Add labels to the buttons*/
+lv_obj_t * label1 = lv_label_create(btn1, NULL);	/*Create a label on the first button*/
+lv_label_set_text(label1, "Button 1");          	/*Set the text of the label*/
+
+lv_obj_t * label2 = lv_label_create(btn2, NULL);  	/*Create a label on the second button*/
+lv_label_set_text(label2, "Button 2");            	/*Set the text of the label*/
+
+/*Delete the second label*/
+lv_obj_del(label2);
+```
+
+还有 rtthread 里线程创建的
+
+```c
+/* 线程示例 */
+int thread_sample(void)
+{
+    /* 创建线程 1，名称是 thread1，入口是 thread1_entry*/
+    static rt_thread_t tid1 = rt_thread_create("thread1",
+                            thread1_entry, RT_NULL,
+                            THREAD_STACK_SIZE,
+                            THREAD_PRIORITY, THREAD_TIMESLICE);
+
+    /* 如果获得线程控制块，启动这个线程 */
+    if (tid1 != RT_NULL)
+        rt_thread_startup(tid1);
+
+    return 0;
+}
+
+/* 导出到 msh 命令列表中 */
+MSH_CMD_EXPORT(thread_sample, thread sample);
+```
+
+甚至 Linux 环境下 socket 编程
+
+```c
+int main(){
+    //创建套接字
+    int serv_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    //将套接字和IP、端口绑定
+    struct sockaddr_in serv_addr;
+    memset(&serv_addr, 0, sizeof(serv_addr));  //每个字节都用0填充
+    serv_addr.sin_family = AF_INET;  //使用IPv4地址
+    serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");  //具体的IP地址
+    serv_addr.sin_port = htons(1234);  //端口
+    bind(serv_sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+    //进入监听状态，等待用户发起请求
+    listen(serv_sock, 20);
+    //接收客户端请求
+    struct sockaddr_in clnt_addr;
+    socklen_t clnt_addr_size = sizeof(clnt_addr);
+    int clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_addr, &clnt_addr_size);
+    //向客户端发送数据
+    char str[] = "http://c.biancheng.net/socket/";
+    write(clnt_sock, str, sizeof(str));
+   
+    //关闭套接字
+    close(clnt_sock);
+    close(serv_sock);
+    return 0;
+}
+```
+这些代码都是类似的，都是定义一个东西等于一个函数的返回值，然后用不同方法操作这个东西。HAL 库里有些东西也是这样，但是 HAL 库还是和STM32硬件本身耦合的比较紧。
+
+在学习使用 LVGL 时会熟悉 C 的一些编程方法和思想，比如 C 中继承，这种思想在 gui 上是可视化的，很容易理解。如果自己写过网站的话，css 样式控制代码里更是如此。在此基础上去使用 rt-thread 的成本就比较低了，只需要稍稍理解一下线程的概念，就能轻松的让多任务跑起来，而且手册中的 OOP 思想也因为有 lgvl 的对比理解，不那么抽象了。
+
+熟练使用 rtos 大约也要花个几个月的时间，这时候应该可以很容易的实现出更大规模的系统。
+
+熟练的基于 rtos 开发后，一方面可以去试着基于 linux 去开发对运算要求更高的应用，也可以去看看 linux 驱动开发，也可以在 linux 上玩玩，有了前面的基础，玩linux 也不困难。同时也可以去看看 rtthread 的实现原理，这是一个中等规模的 C 语言项目，同时也能学习操作系统的一些知识，rtt 里面好多东西在 linux 里都能找到影子 比如 menuconfig 工具，自动初始化机制的宏定义，甚至驱动框架都有借鉴的地方。
+
+
+
+(2022.6)
 
 嵌入式的领域过于宽广，洗衣机控制系统、手机、甚至树莓派都可以叫做嵌入式平台，Nvidia 把自己推出的小型 AI 计算机也叫做嵌入式边缘计算平台，所以我用一句话总结嵌入式：除了日常使用的通用电脑之外其他的可以跑代码的、有 CPU 、需要写程序的计算设备。
 
@@ -44,19 +167,8 @@
 
 这些芯片的内核，或者叫 CPU 都是 ARM 公司设计的，通用 PC 一般来讲都是 x86 架构（Mac 上用的 M1 是个例外），这也是嵌入式系统的一个特征。
 
-## 这个笔记的框架
-
-- Cortex-M 内核芯片裸机开发
-  - STM32F 系列芯片与 HAL 库
-  - NXP i.MX RT 系列芯片
-- LVGL 与 C 语言的 OOP 思想
-- 基于 RTOS(rt-thread) 进行开发
-- ARM 架构(计算机组成原理)
-- RTOS 原理与 rt-thread 实现
-- 数字逻辑(FPGA)与 RISC-V 架构 
 
 
-再往上还有嵌入式 Linux，不过这部分也可以归入到计算机技术里面，自此往后，又要开始学习计算机了，有了对底层硬件以及小型计算机系统的理解，再去重新学习计算机技术也会变得更容易。
 
 ## 一些想法
 

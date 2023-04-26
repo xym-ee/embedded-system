@@ -1,5 +1,5 @@
 ---
-sort: 3
+sort: 1
 ---
 # 使用 rt-thread 的设备驱动
 
