@@ -4,8 +4,7 @@ sort: 1
 # keil scatter 分散加载
 
 
-## 可执行文件
-
+## 生产的可执行文件
 
 MCU 的存储空间：片内 Flash、片内 RAM。编译完成后，会看到程序占用空间的信息
 
@@ -63,8 +62,67 @@ STM32 在上电启动之后默认从 Flash 启动，启动之后会将 RW 段中
 - 3）两类域(region)：执行域(execution region)和加载域(load region)。
 - 4）加载域，该映像文件开始运行前存放的区域，即当系统启动或加载时应用程序存放的区域。
 - 5）执行域，映像文件运行时的区域，即系统启动后，应用程序进行执行和数据访问的存储器区域，系统在实时运行时可以有一个或多个执行块。
-- 6）scatter本身并不能对映像实现“解压缩”，编译器读入scatter文件之后会根据其中的各种地址生成启动代码了，实现对映像的加载，而这一段代码就是*（InRoot$$Sections）它是__main()的一部分。这就是在汇编启动代码的最后跳转到__main()而不是跳向main()的原因之一。
-- 7）起始地址与加载域重合的执行域称为root region，*（InRootSections）必须放在这个执行域中，否则链接的时候会报错。
+- 6）scatter本身并不能对映像实现“解压缩”，编译器读入scatter文件之后会根据其中的各种地址生成启动代码了，实现对映像的加载，而这一段代码就是 `*(InRoot$$Sections)` 它是 `__main()` 的一部分。这就是在汇编启动代码的最后跳转到 `__main()` 而不是跳向 `main()` 的原因之一。
+- 7）起始地址与加载域重合的执行域称为root region，`*(InRootSections)` 必须放在这个执行域中，否则链接的时候会报错。`*(+RO)` 包含了 `*(InRootSections)`，所以如果在 rootregion 中用到了 `*(+RO)` 就可以不再指定 `*(InRootSections)`
+
+
+## 语法
+
+```
+ROM_LOAD 0x00000000
+{
+  ROM 0x00000000 0x003FFFFF      
+  {
+      vectors.o (+RO,+FIRST)
+    * (InRoot$$Sections)       ; All library sections that must be in a root region
+    *(+RO)
+  }
+
+     SRAM 0x00400000 0x003FFFFF
+    {
+        * (+RW,+ZI)
+    }
+
+    SDRAM1 0x41000000 UNINIT
+    {
+         stack.o (+ZI) ; stack.s中定义了top_of_stack为长度为1的space，指定栈顶地址
+    } 
+
+    SDRAM2 +0 UNINIT
+    {   
+        heap.o (+ZI)
+    }   
+}
+```
+
+注解：
+1. ROM_LOAD是加载域。这里只有一个，也可以有多个（rom地址不连续的情况）
+2. ROM、SRAM、SDRAM1、SDRAM2是执行域，有多个。第一个执行域必须和加载域地址重合，因为ARM的复位地址就是加载域的起始地址（有bootstrap的话加载域址就是bootstrap执行完后的跳转地址）
+3. vectors.o (+RO, +FIRST) 中断向量表放在最开头
+4. ROM 0x00000000 0x003FFFFF; 加载域名 起始地址 最大允许长度；‘最大允许长度’也可以省略，但缺点是编译器不会检查段是否溢出和别的段重叠了。‘起始地址’= +0表示紧接着上一段开始的连续地址。
+5. * (InRoot$$Sections)是复制代码的代码
+6. UNINT关键字表示不进行初始化清零
+
+
+值得注意的是：在一个scatter文件中，同一个.o文件不能出现2次，即使是在2个不同的加载域中也不可以，否则会报错：Ambiguous selectors found for *.o，错误的例子：
+LOAD1 0x00000000
+{
+    EXE1
+    {
+            Init.o
+     }
+}
+
+LOAD2 0xFFFF0000
+{
+    EXE2
+    {
+            Init.o
+     }
+}
+
+
+
 
 ## 结构
 
@@ -74,69 +132,82 @@ STM32 在上电启动之后默认从 Flash 启动，启动之后会将 RW 段中
   <img src="https://img-blog.csdnimg.cn/2021022414391748.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0tYdWUwNzAz,size_16,color_FFFFFF,t_70#pic_center" width = 350>
 </figure>
 
-## 加载时域
+<figure>
+  <img src="http://hiphotos.baidu.com/chenxing263/pic/item/87ac2edc789d8ceecc11661a.jpg" width=400>
+</figure>
+
+具体来说，在scatter文件中可以指定下列信息：
+- 各个加载时域的加载时起始地址、最大尺寸和属性；
+- 每个加载时域包含的输出段；
+- 各个输出段的运行时起始地址、最大尺寸、存储访问特性和属性；
+- 各个输出段中包含的输入段。
+
+### 加载时域
 
 ```
-load_region_name (base_address|("+"offset)) [attribute_list] [max_size]
+load_region_name  [#start_address + #offset] [attribute] [#max_size]
 {
-  execution_region_description+
+  ; execution_region_description
 }
 ```
 
-- load_region_name：为本加载时域的名称，名称可以按照用户意愿自己定义，该名称中只有前 31 个字符有意义。它仅仅用来唯一的标识一个加载时域，而不像运行时域的名称除了唯一的标识一个运行时域外，还用来构成连接器连接生成的连接符号。
-- base_designator：用来表示本加载时域的起始地址，可以有下面两种格式中的一种：
-  - base_address：表示本加载时域中的对象在连接时的起始地址，地址必须是字对齐的；
-  - +offset：表示本加载时域中的对象在连接时的起始地址是在前一个加载时域的结束地址后偏移量 offset 字节处。本加载时域是第一个加载时域，则它的起始地址即为 offset， offset 的值必须能被 4 整除。
-- attribute_list：指定本加载时域内容的属性，包含以下几种， 默认加载时域的属性是ABSOLUTE。
+- `load_region_name`：加载时域的名称，名称可以按照用户意愿自己定义，该名称中只有前 31 个字符有意义。它仅仅用来唯一的标识一个加载时域，而不像运行时域的名称除了唯一的标识一个运行时域外，还用来构成连接器连接生成的连接符号。
+- `#start_address + #offset`：用来表示本加载时域的起始地址
+  - `start_address`：表示本加载时域中的对象在连接时的起始地址，地址必须是字对齐的；
+  - `offset`：连接时的起始地址相对于上一加载时域的偏移地址，4 Byte 对齐。本加载时域是第一个加载时域，则它的起始地址即为 offset。
+- `attribute`：指定本加载时域的属性，默认加载时域的属性是ABSOLUTE。
   - PI – 位置无关属性。
   - RELOC – 重定位。
   - OVERLAY – 覆盖。
-  - ABSOLUTE – 起始地址由base_designator指定（默认属性）。
-- max_size：指定本加载时域的最大尺寸。如果本加载时域的实际尺寸超过了该值，连接器将报告错误， 默认取值为 0xFFFFFFFF。
-- execution_region_description：表示运行时域，后面有个+号，表示其可以有一个或者多个运行时域，关于运行时域的介绍请看后面。
+  - ABSOLUTE – 起始地址由[#start_address + #offset]
+- `max_size`：指定本加载时域的最大尺寸。如果本加载时域的实际尺寸超过了该值，连接器将报告错误，默认取值为  `0xFFFFFFFF`。
+- execution_region_description：运行时域，可以有多个运行时域。
 
-## 运行时域
+### 运行时域
 
 ```
-exec_region_name (base_address|"+"offset) [attribute_list] [max_size|" "length]
+execution_region_name  [#start_address + #offset]  [attribute] [max_size]
 {
-    input_section_description*
+  ; input_section_description
 }
 ```
 
-- exec_region_name：为本加载时域的名称，名称可以按照用户意愿自己定义，该名称中只有前 31 个字符有意义。它除了唯一的标识一个运行时域外，还用来构成连接器生成的连接符号。
-- base_designator：用来表示本加载时域的起始地址，可以有下面两种格式中的一种：
-  - base_address：表示本运行时域中的对象在连接时的起始地址，地址必须是字对齐的；
-  - +offset：表示本运行时域中的对象在连接时的起始地址是在前一个加运行时域的结束地址后偏移量 offset 字节处。本运行时域是第一个加载时域，则它的起始地址即为 offset， offset 的值必须能被 4 整除。
-- attribute_list：指定本加载时域内容的属性，包含以下几种， 默认加载时域的属性是ABSOLUTE。
+- `execution_region_name`：为运行时域的名称，名称可以按照用户意愿自己定义，该名称中只有前 31 个字符有意义。它除了唯一的标识一个运行时域外，还用来构成连接器生成的连接符号。
+- `#start_address + #offset`：用来表示本运行时域的起始地址：
+  - `start_address`：表示本运行时域中的对象在连接时的起始地址，地址必须是字对齐的；
+  - `offset`：表示本运行时域相对前一个运行时域结束地址的偏移量。
+- `attribute`：指定本加载时域内容的属性，包含以下几种， 默认加载时域的属性是ABSOLUTE。
   - PI – 位置无关属性。
   - RELOC – 重定位。
   - OVERLAY – 覆盖。
-  - ABSOLUTE – 起始地址由base_designator指定（默认属性）。
-  - FIXED – 固定地址。此时该域加载时域地址和运行时域地址是相同的，而且都是通过base_designator指定的，而且base_designator必须是绝对地址或者offset为0。s
-- max_size：指定本运行时域的最大尺寸。如果本运行时域的实际尺寸超过了该值，连接器将报告错误， 默认取值为 0xFFFFFFFF。
-- length：如果指定的长度为负值，则将 base_address 作为区结束地址。它通常与EMPTY 一起使用，以表示在内存中变小的堆栈。
+  - ABSOLUTE – 起始地址由 start_address 指定（默认属性）。
+  - FIXED – 固定地址。此时该域加载时域地址和运行时域地址是相同的，而且都是通过 start_address 指定的，而且 start_address 必须是绝对地址或者 offset 为 0 。
+- `max_size`：指定本运行时域的最大尺寸。如果本运行时域的实际尺寸超过了该值，连接器将报告错误，默认取值为 0xFFFFFFFF。
+- `length`：如果指定的长度为负值，则将 start_address 作为区结束地址。它通常与 EMPTY 一起使用，以表示在内存中变小的堆栈。
 
-## 输入段描述
+### 输入段描述
 
 ```
-module_select_pattern [ "(" input_section_selector ( "," input_section_selector )* ")" ]
-("+" input_section_attr | input_section_pattern | input_symbol_pattern)
+    module_select_pattern  (
+      (+input_section_attr | input_section_pattern)
+      ([","] +input_section_attr | "," input_section_pattern))
+                            
 ```
 
-- module_select_pattern：目标文件滤波器，支持使用通配符“”与“?”。其中符号“”代表零个或多个字符，符号“？”代表单个字符。进行匹配时所有字符不区分大小写。
-- input_section_attr：属性选择器与输入段属性相匹配。每个 input_section_attr 的前面有一个“+”号。如果指定一个模式以匹配输入段名称，名称前面必须有一个“+”号。可以省略紧靠“+”号前面的任何逗号。 选择器不区分大小写（可以识别的为属性First、Last）。
-
-通过使用特殊模块选择器模式.ANY ，可以将输入段分配给执行区，而无需考虑其父模块。可以使用一个或多个.ANY 模式以任意分配方式填充运行时域。在大多数情况下，使用单个.ANY 等效于使用*模块选择器。
-
+- `module_select_pattern`：目标文件滤波器，支持使用通配符 `*` 与 `?` 
+  - `*` 匹配任意字符，`*`，`.ANY`
+  - `?` 匹配单个字符
+  - 进行匹配时所有字符不区分大小写。
+- `input_section_attr`：属性选择器与输入段属性相匹配。每个 input_section_attr 的前面有一个“+”号。如果指定一个模式以匹配输入段名称，名称前面必须有一个“+”号。可以省略紧靠“+”号前面的任何逗号。 选择器不区分大小写（可以识别的为属性First、Last）。
+  - 通过使用特殊模块选择器模式.ANY ，可以将输入段分配给执行区，而无需考虑其父模块。可以使用一个或多个.ANY 模式以任意分配方式填充运行时域。在大多数情况下，使用单个.ANY 等效于使用*模块选择器。
 
 ## 应用举例
 
 ### 1
 
 以 ST 的 Cortex-M4 核的低功耗 STM32L476VC 芯片为例，其资源如下：
-- 1）Flash基地址：0x08000000，小为 256kB(0x00040000)
-- 2）RAM基地址：0x20000000，大小为 96kB(0x00018000)
+- Flash 基地址：0x08000000，小为 256kB(0x00040000)
+- RAM 基地址：0x20000000，大小为 96kB(0x00018000)
 
 ```
 ; 定义一个加载时域，域基址：0x08000000，域大小为 0x00040000
@@ -377,32 +448,7 @@ LR_IROM2 0x20000000 0x00200000 {    ; 定义 Flash2 的加载域
 - `__rt_entry()` 负责初始化堆栈，完成库函数初始化，最后自动跳转 `main()` 函数
 
 
-## 
-以 rt1061 为例，
-
-sct 文件的格式
-```
-load_region_name  start_address | "+"offset  [attributes] [max_size]
-{
-    execution_region_name  start_address | "+"offset  [attributes][max_size]
-    {
-        module_select_pattern  ["("
-                                    ("+" input_section_attr | input_section_pattern)
-                                    ([","] "+" input_section_attr | "," input_section_pattern)) *
-                               ")"]
-    }
-} 
-```
-
-
-
-
-
-一个文件中可包含有多个加载域，而一个加载域可由多个部分的执行域组成。同等级的域之间使用花括号“{}”分隔开，最外层的是加载域（LR_IROM1），第二层“{}”内的是执行域 （ER_IROM1， RW_IRAM1）
-
-
-
-
+## 一个实际的例子
 
 ```
 #define m_flash_config_start           0x60000000
@@ -438,6 +484,7 @@ load_region_name  start_address | "+"offset  [attributes] [max_size]
 
 #if defined(XIP_BOOT_HEADER_ENABLE) && (XIP_BOOT_HEADER_ENABLE == 1)
 LR_m_text m_flash_config_start m_text_start+m_text_size-m_flash_config_start {   ; load region size_region
+  
   RW_m_config_text m_flash_config_start FIXED m_flash_config_size { ; load address = execution address
     * (.boot_hdr.conf, +FIRST)
   }
