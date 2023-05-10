@@ -1,13 +1,9 @@
 ---
 sort: 1
 ---
-# 基本 bsp 
+# bsp 制作的相关只是
 
-只包含 GPIO 与 FinSH 功能。
-
-复制模板，改成自己的项目名。
-
-## 1. CubeMX 配置芯片初始化代码
+## STM 32 芯片 CubeMX 配置芯片初始化代码
 
 在 `board/CubeMX_Config` 里启动 `CubeMX_Config.ioc`
 
@@ -26,8 +22,6 @@ sort: 1
 
 其他默认即可，生成代码后，移动 Core 里的 Src 和 Inc 到外面，关注 MDK-ARM 里 `.s` 文件的名字。
 
-## 2. 芯片时钟初始化与内存配置
-
 ### board.c 时钟
 
 复制 CubeMX 生成的 main 里的 void SystemClock_Config(void) 函数到 board.c里。
@@ -39,16 +33,22 @@ sort: 1
 #define STM32_SRAM_SIZE               128
 ```
 
-## 4. Kconfig 配置
+## NXP 芯片MCUXpresso Config Tools 
 
-芯片型号和系列
+## env 工具
+
+- KConfig
+- menuconfig
 
 
-## 5. IDE 相关配置
+## 分散加载文件
 
-### linker_scripts
+C 语言的编译过程中会生成 `.o` 文件，此文件为可重定位的可执行文件，即这个文件已经是二进制的机器码了，可以使用 objdump 工具来反汇编查看了，但是
 
-### SConscript
 
-### MDK5 模板
+
+
+
+
+
 
