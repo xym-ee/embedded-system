@@ -3,7 +3,6 @@ sort: 1
 ---
 # keil scatter 分散加载
 
-
 ## 生产的可执行文件
 
 MCU 的存储空间：片内 Flash、片内 RAM。编译完成后，会看到程序占用空间的信息
@@ -31,11 +30,20 @@ Program Size: Code=42116 RO-data=7328 RW-data=2868 ZI-data=128204
 
 STM32 在上电启动之后默认从 Flash 启动，启动之后会将 RW 段中的 RW-data（初始化的全局变量）搬运到 RAM 中，但不会搬运 RO 段，即 CPU 的执行代码从 Flash 中读取，另外根据编译器给出的 ZI 地址和大小分配出 ZI 段，并将这块 RAM 区域清零。
 
-为什么上述的 RW-Data 既占用 Flash 又占用 RAM 呢？首先变量必先要初始化才能使用，否则初值不正确，而在 main() 函数后变量已经可以正常使用，那就是说变量的初始化是在之前完成的，查看这之前的代码只有 __main() 一个函数，除了赋初值外，都还做了什么呢？
+为什么上述的 RW-Data 既占用 Flash 又占用 RAM 呢？首先变量必先要初始化才能使用，否则初值不正确，而在 `main()` 函数后变量已经可以正常使用，那就是说变量的初始化是在之前完成的，查看这之前的代码只有 `__main()` 一个函数，除了赋初值外，都还做了什么呢？
 
-函数__main()主要由以下两部分功能组成，如下所示:
-- 1) __main()：完成代码和数据的拷贝，并把 ZI 数据区清零。代码拷贝可将代码拷贝到另外一个映射空间并执行 (例如将代码拷贝到 RAM 执行)； 数据拷贝完成 RW 段数据赋值；数据区清零完成 ZI 段数据赋值。以上的代码和分散加载文件密切相关。
-- 2) _rt_entry()：进行 STACK 和 HEAP 等的初始化。最后_rt_entry跳进 main()函数入口。当 main()函数执行完后， _rt_entry 又将控制权交还给调试器。
+函数 `__main()` 主要由以下两部分功能组成，如下所示:
+- 1) `__main()`：完成代码和数据的拷贝，并把 ZI 数据区清零。代码拷贝可将代码拷贝到另外一个映射空间并执行 (例如将代码拷贝到 RAM 执行)； 数据拷贝完成 RW 段数据赋值；数据区清零完成 ZI 段数据赋值。以上的代码和分散加载文件密切相关。
+- 2) `_rt_entry()`：进行 STACK 和 HEAP 等的初始化。最后 `_rt_entry` 跳进 `main()` 函数入口。当 `main()` 函数执行完后， `_rt_entry` 又将控制权交还给调试器。
+
+
+在整个 4GB 的地址空间内
+- **加载时域**：程序烧入 Flash 中的状态，
+- **运行时域**：是指程序执行时的状态
+
+<figure>
+  <img src="https://documentation-service.arm.com/static/5ea19f049931941038de9921?token=" width=600>
+</figure>
 
 ## 分散加载文件干什么的
 
@@ -129,11 +137,7 @@ LOAD2 0xFFFF0000
 分散加载文件一般由1个加载时域和1到多个运行时域组成（当然也可以包含2个以上的加载时域）
 
 <figure>
-  <img src="https://img-blog.csdnimg.cn/2021022414391748.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0tYdWUwNzAz,size_16,color_FFFFFF,t_70#pic_center" width = 350>
-</figure>
-
-<figure>
-  <img src="http://hiphotos.baidu.com/chenxing263/pic/item/87ac2edc789d8ceecc11661a.jpg" width=400>
+  <img src="https://documentation-service.arm.com/static/5ea19f049931941038de992b?token=" width=500>
 </figure>
 
 具体来说，在scatter文件中可以指定下列信息：
@@ -521,4 +525,4 @@ LR_m_text m_interrupts_start m_text_start+m_text_size-m_interrupts_start {   ; l
 
 - [ARM之一 分散加载文件（scatter）详述](https://blog.csdn.net/KXue0703/article/details/114018759)
 - [Scatter文件的编写及分析](https://blog.csdn.net/nolatin/article/details/8545606?spm=1001.2101.3001.6661.1&utm_medium=distribute.pc_relevant_t0.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-1-8545606-blog-114018759.235%5Ev35%5Epc_relevant_default_base3&depth_1-utm_source=distribute.pc_relevant_t0.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-1-8545606-blog-114018759.235%5Ev35%5Epc_relevant_default_base3&utm_relevant_index=1)
-
+- [ARM Compiler armlink User Guide](https://developer.arm.com/documentation/dui0474/latest)
