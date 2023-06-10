@@ -1,10 +1,12 @@
 ---
-sort: 2
+sort: 1
 ---
 # 开发板基础使用
 
 
-## 参数
+## 开发板参数
+
+### 野火 IMX6ULL
 
 - RAM DDR3 512MB
 - eMMC 8GB
