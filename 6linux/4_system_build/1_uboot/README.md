@@ -81,8 +81,52 @@ uboot 的源码
 
 ## 源码编译
 
-厂商的源码解压缩，初次编译。
+开发板厂商的源码解压缩，初次编译。
 
+```bash
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- distclean
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- mx6ull_14x14_ddr512_emmc_defconfig
+make V=1 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j12
+```
+
+- 工程清理。`ARCH=arm` 设置目标为 arm 架构，`CROSS_COMPILE` 指定所使用的交叉编译器。第一条命令相当于“make distclean”，清除工程
+- 配置 uboot。`make mx6ull_14x14_ddr512_emmc_defconfig`，使用默认配置文件，把配置项写到 `.config` 里
+- 编译。最后一条指令相当于 `make -j12` 也就是使用 12 核来编译 uboot，`V=1` 输出中间信息
+
+makefile 里要判断架构，相当于传入参数里设置了架构。以及使用的交叉编译器。
+
+编译完成后，会出来一些文件。
+
+- uboot.bin 编译完成无法启动，需要添加其他信息(imx系列)。这里从编译信息可以看到最后一步
+
+./tools/mkimage -n board/freescale/mx6ullevk/imximage-ddr512.cfg.cfgtmp -T imximage -e 0x87800000 -d u-boot.bin u-boot.imx
+
+用这个工具完成的。最终可以用的是 `u-boot.imx`
+
+otg 烧写，工具，mfgtools，
+- firmware 先下载到 DDR 里的中间系统
+- files 最终下载到 mmc 里的系统。
+
+替换文件即可。
+
+用这个东西烧写会重新烧录所有东西进去。烧写完成设置 emmc 启动，在此启动就能看到编译编译时间。
+
+
+## 自动化脚本
+
+在精简一下整个流程。
+
+
+```makefile
+#!/bin/bash
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- distclean
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- mx6ull_14x14_ddr512_emmc_defconfig
+make V=1 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j12
+```
+
+通过图形化界面配置后，就不可以 distclean 了。
+
+此外，还可以直接给 Makefile 里的传入的变量赋值，就不用每次输这么多指令了。
 
 
 
