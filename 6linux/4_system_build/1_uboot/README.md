@@ -4,6 +4,12 @@ sort: 1
 # uboot
 
 
+## 参考资料
+
+
+
+
+
 ## uboot 简介
 
 uboot(Universal Boot Loader) 是一个综合的裸机程序。现在的 uboot 已经支持液晶屏、网络、USB 等高
