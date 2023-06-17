@@ -69,13 +69,52 @@ sort: 6
 
 ## NFS 
 
-主机
+主机安装
 
-sudo apt install nfs-kernel-server
+- `sudo apt install nfs-kernel-server`
+- `sudo vim /etc/exports` 配置要共享的文件夹，增加配置项
+  - `/home/xym/ws_linux *(rw,sync,no_root_squash)`
+    - `/home/xym/ws_linux` 目录
+    - `*` 所有网段，也可设置为 10.0.0.0/24 指定网段
+    - `rw` 可读可写
+    - `sync` 同步缓存
+    - `no_root_squash` 访问者给 root 权限
+- `sudo /etc/init.d/nfs-kernel-server restart` 重启一下 nfs 服务
+- `showmount -e` 可以看到挂载的共享目录
+
+开发板挂载共享文件系统
+- `mount -t nfs 10.0.0.10:/home/xym/ws_linux /mnt`
+- `mount -t nfs -o nolock,nfsvers=3 10.0.0.10:/home/xym/ws_linux /mnt`
+
+
+## tftp
+
+uboot里用来加载 内核等到 DDR 中
+
+
+- `sudo apt install xinetd`
+- 若无`/etc/xinetd.conf`文件，新建一个，内容在后面
+- `sudo apt install tftp-hpa tftpd-hpa`
+- 配置共享文件夹 `sudo vim /etc/default/tftpd-hpa`
 
 
 
-/home/embedfire/workdir 192.168.0.0/24(rw,sync,all_squash,anonuid=998,anongid=998,no_subtree_check)
 
 
 
+```
+# Simple configuration file for xinetd
+#
+# Some defaults, and include /etc/xinetd.d/
+
+defaults
+{
+
+# Please note that you need a log_type line to be able to use log_on_success
+# and log_on_failure. The default is the following :
+# log_type = SYSLOG daemon info
+
+}
+
+includedir /etc/xinetd.d
+```

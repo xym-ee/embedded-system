@@ -196,6 +196,15 @@ DRAM 中复制，或者NOR FLASH向DRAM复制。
 
 ## 网络操作
 
+在网络操作前，先要联网，用环境变量设置一些信息
+```
+=> setenv ipaddr 10.0.0.11
+=> setenv ethaddr 88:cf:b2:c0:07:cb
+=> setenv netmask 255.255.255.0
+=> setenv gatewayip 10.0.0.1
+=> setenv serverip 10.0.0.11
+```
+
 - `ping`
 - `nfs`
 
@@ -311,5 +320,7 @@ Kernel panic – not Syncing: VFS: Unable to mount root fs on unknown-block(0,0)
 - `mtest`
 
 
+go 命令，可以编译裸机程序，然后 nfs 挂载到 DDR 中，使用此命令运行。uboot 初始化好了 IVT 等，直接就能运行。
 
+run 用来运行定义在环境变量中的命令。如 `run bootcmd`
 
