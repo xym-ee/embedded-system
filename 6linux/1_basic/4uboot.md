@@ -34,9 +34,13 @@ nfs 挂载根文件系统，通过修改 bootargs 参数实现。
 
 ```
 setenv bootargs 'console=ttymxc0,115200 root=/dev/nfs \
-nfsroot=10.0.0.10:/home/xym/tftp/rootfs,proto=tcp rw \ 
+nfsroot=10.0.0.10:/home/xym/ws_linux/rootfs,proto=tcp rw \ 
 ip=10.0.0.11:10.0.0.10:10.0.0.1:255.255.255.0::eth0:off'
 ```
 
+
+```
+setenv bootargs 'console=ttymxc0,115200 root=/dev/nfs nfsroot=10.0.0.10:/home/xym/ws_linux/rootfs,proto=tcp rw ip=10.0.0.11:10.0.0.10:10.0.0.1:255.255.255.0::eth0:off'
+```
 
 

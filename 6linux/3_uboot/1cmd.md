@@ -1,7 +1,7 @@
 ---
 sort: 1
 ---
-# uboot 命令
+# uboot 使用
 
 为了方便，学习 uboot 期间可以把 uboot 烧到 SD 卡中启动。
 
