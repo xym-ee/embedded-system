@@ -202,7 +202,7 @@ DRAM 中复制，或者NOR FLASH向DRAM复制。
 => setenv ethaddr 88:cf:b2:c0:07:cb
 => setenv netmask 255.255.255.0
 => setenv gatewayip 10.0.0.1
-=> setenv serverip 10.0.0.11
+=> setenv serverip 10.0.0.10
 ```
 
 - `ping`
@@ -277,7 +277,7 @@ bootz 80800000 - 83000000
 mmc 启动
 ```
 fatload mmc 1:1 80800000 zImage
-fatload mmc 1:1 83000000 imx6ull-14x14-emmc-7-1024x600-c.dtb
+fatload mmc 1:1 83000000 imx6ull-14x14-emmc-4.3-800x480-c.dtb
 bootz 80800000 - 83000000
 ```
 
