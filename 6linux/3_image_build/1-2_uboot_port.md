@@ -1,7 +1,7 @@
 ---
-sort: 4
+sort: 2
 ---
-# uboot 新开发板适配
+# uboot 新板适配
 
 参考芯片厂商的 SDK。
 
@@ -200,8 +200,6 @@ uboot 最终目的，启动 kernel，
 
 先确定mmc 中有内核 `fatls mmc 1:1`
 
-
-
 ```
 mmc dev 1
 fatload mmc 1:1 80800000 zImage
@@ -209,19 +207,32 @@ fatload mmc 1:1 83000000 imx6ull-14x14-emmc-4.3-800x480-c.dtb
 bootz 80800000 - 83000000
 ```
 
+```
+setenv bootcmd 'mmc dev 1; fatload mmc 1:1 80800000 zImage; fatload mmc 1:1 83000000 imx6ull-14x14-emmc-4.3-800x480-c.dtb; bootz 80800000 - 83000000;'
+```
+
 
 ```
 setenv bootargs 'console=ttymxc0,115200 root=/dev/mmcblk1p2 rootwait rw'
+setenv bootcmd 'mmc dev 1; fatload mmc 1:1 80800000 zImage; fatload mmc 1:1 83000000
+imx6ull-alientek-emmc.dtb; bootz 80800000 - 83000000;'
 ```
+ 
+setenv bootargs 'console=tty1 console=ttymxc0,115200 root=/dev/mmcblk1p2 rootwait rw'
 
 
-setenv bootargs 'console=tty1 root=/dev/mmcblk1p2 rootwait rw'
-
-
+### 网络启动
 
 ```
 tftp 80800000 zImage
 tftp 83000000 imx6ull-14x14-emmc-4.3-800x480-c.dtb
+tftp 83000000 imx6ull.dtb
 bootz 80800000 - 83000000
+```
+
+
+
+```
+
 ```
 

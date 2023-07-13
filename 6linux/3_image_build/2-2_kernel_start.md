@@ -1,7 +1,7 @@
 ---
-sort: 1
+sort: 7
 ---
-# 目录分析
+# kernel 启动流程
 
 - `/arch` 架构相关
   - `/arch/arm/boot/zImage` 编译出的内核镜像

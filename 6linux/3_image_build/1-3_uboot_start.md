@@ -1,7 +1,7 @@
 ---
-sort: 2
+sort: 3
 ---
-# uboot 源码结构与 makefile
+# uboot 启动流程
 
 使用 vscode 远程访问虚拟机的 uboot 工程文件夹
 
