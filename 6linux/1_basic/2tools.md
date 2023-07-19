@@ -37,7 +37,7 @@ sort: 2
 
 
 
-## 远程终端工具
+## ubuntu ssh 主机与从机服务安装
 
 在 ubuntu 主机中，可以直接在终端中使用 ssh，开发板已经安装并启动了 ssh 工具。
 
@@ -49,8 +49,24 @@ windows中，
 ssh 主机需要安装功能
 
 ```bash
+# ssh 服务器功能
+sudo apt install openssh-server
 
+# 检查 ssh 状态
+service ssh status
+# 如果正常，应该提示 active(running)
+
+# 允许 ssh 通过防火墙
+sudo ufw allow ssh
 ```
+
+
+ssh 客户端需要安装的功能
+```bash
+# ssh 客户端
+sudo apt install openssh-client
+```
+
 
 ## 代码编辑器
 
@@ -59,7 +75,7 @@ ssh 主机需要安装功能
 或者使用 windows 版本的 vscode 远程工具。
 
 
-## NFS
+## NFS 服务器
 
 1.主机安装
 ```bash
@@ -68,10 +84,10 @@ sudo apt install nfs-kernel-server
 
 2.配置 nfs 共享的目录，配置文件为 `/etc/exports`
 
+查看id，uid，gid，用户组，我这里为1000，在配置里给当前用户一样的权限。
 ```
-/home/xym/ws_linux 10.0.0.10/24(rw,sync,all_squash,no_subtree_check)
+/home/xym/ws_linux 10.0.0.10/24(rw,sync,all_squash,anonuid=1000,anongid=1000,no_subtree_check)
 ```
-
 
 3.重启NFS服务
 
@@ -91,6 +107,15 @@ mount 10.0.0.10:/home/xym/ws_linux /mount
 #查看挂载的目录
 df
 ```
+
+## tftp 服务器
+
+sudo apt-get install xinetd tftp-hpa tftpd-hpa
+
+配置 sudo vim /etc/xinetd.conf
+
+## 交叉编译工具链
+
 
 
 

@@ -15,9 +15,12 @@ ip=10.0.0.11:10.0.0.10:10.0.0.1:255.255.255.0::eth0:off
 
 启动参数
 ```
-setenv bootargs 'console=ttymxc0,115200 root=/dev/nfs nfsroot=10.0.0.10:/home/xym/ws_linux/rootfs,proto=tcp,nfsvers=3 rw ip=10.0.0.11:10.0.0.10:10.0.0.1:255.255.255.0::eth0:off' 
+setenv bootargs 'console=ttymxc0,115200 root=/dev/nfs nfsroot=10.0.0.22:/home/xym/ws_linux/rootfs,proto=tcp,nfsvers=3 rw ip=10.0.0.11:10.0.0.22:10.0.0.1:255.255.255.0::eth0:off'
 ```
 
+```
+setenv bootargs 'console=tty1 console=ttymxc0,115200 root=/dev/nfs nfsroot=10.0.0.10:/home/xym/ws_linux/rootfs,proto=tcp,nfsvers=3 rw ip=10.0.0.11:10.0.0.10:10.0.0.1:255.255.255.0::eth0:off' 
+```
 
 uboot 有比较强的容错能力，可能首选非从 nfs 挂载，遇到这种情况，手动写死 bootcmd
 

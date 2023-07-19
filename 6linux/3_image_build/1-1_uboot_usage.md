@@ -348,7 +348,7 @@ DRAM 中复制，或者NOR FLASH向DRAM复制。
 => setenv ethaddr 88:b2:77:40:8e:48
 => setenv netmask 255.255.255.0
 => setenv gatewayip 10.0.0.1
-=> setenv serverip 10.0.0.10
+=> setenv serverip 10.0.0.22
 ```
 
 - `ping`
