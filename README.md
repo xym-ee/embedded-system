@@ -16,24 +16,25 @@
 
 ## 这个笔记的框架
 
-- MCU 裸机开发
-  - C 语言，硬件操作
-  - STM32 基于 HAL 库开发
-  - NXP RT1052 开发
-- LVGL 与 C 语言基于 OOP 思想开发
-- 基于 RTOS 开发
-  - rt-thread
-  - FreeRTOS
-- ARM 架构(计算机组成原理)
-- rt-thread 原理与实现
-- linux 应用开发
-  - ubuntu使用，shell，vi编辑器
-  - 环境，开发板基本使用
-  - 交叉编译，makefile，文件操作系统调用
-  - 网络编程
-  - 多线程
-- linux 驱动开发
-- 数字逻辑(FPGA)与 RISC-V 架构 
+
+- [ ] MCU 裸机开发，8051、MSP430、arm 内核的 STM32、NXP i.mx rt 等
+  - [ ] 通信接口
+  - [ ] 8bit、16bit mcu
+  - [ ] arm 芯片开发，芯片本身，外设，固件库的使用等
+  - [ ] 软件框架，系统架构，(状态机、订阅发布、事件触发、任务调度)
+- [ ] 中等规模系统开发，编程思维(C 语言 OOP 思想)
+  - [ ] 裸机 LVGL 图形库
+  - [ ] 基于 rtos 开发 (rt-thread 和 freeRTOS)
+- [ ] ARMv7-M 架构与 RTOS 原理
+  - [ ] Cortex-M3 内核，指令集、中断、体系结构等
+  - [ ] rt-thread 内核、驱动
+- [ ] linux 应用开发(系统编程+GUI)
+  - [ ] ubuntu 相关、linux 使用、
+  - [ ] shell 编程、vim、gcc、makefile
+  - [ ] 网络编程、多线程
+- [ ] Linux 驱动开发
+  - [ ] linux 系统构建：bootloader、kernel、device tree、root filesystem
+  - [ ] 各种驱动框架
 
 
 
