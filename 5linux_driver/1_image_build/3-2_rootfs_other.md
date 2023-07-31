@@ -1,7 +1,7 @@
 ---
 sort: 10
 ---
-# rootfs : 其他工具
+# rootfs : 其他工具构建
 
 
 - buildroot

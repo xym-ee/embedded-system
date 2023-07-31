@@ -1,10 +1,80 @@
 ---
-sort: 2
+sort: 1
 ---
-# 直接操作寄存器的 LED 驱动
+# led 驱动开发
 
 
-- 地址映射与 MMU
+- linux 模块，虚拟设备
+- 字符设备驱动框架
+- 常用 api
+
+
+## 驱动思路，分层设计
+
+一个关键的结构体，`linux/fs.h`
+
+驱动的加载有两种方式，一种是直接编译到内核里去，最后就在 zImage 里。
+
+也可以编译成模块，即 `*.ko` 调试的时候，我们可以编译成模块，测试的时候加载模块就好了。
+
+
+## 模块加载与卸载
+
+
+```c
+#include <linux/kernel.h>
+#include <linux/init.h>
+#include <linux/module.h>
+
+
+static int __init xxx_init(void)
+{
+    printk();
+
+    return 0;
+}
+
+static void __exit xxx_exit(void)
+{
+    
+}
+
+
+module_init(xxx_init);
+module_exit(xxx_exit);
+```
+
+编译后，可以使用指令 `insmod` 加载模块。`rmmod` 卸载
+
+- modprobe 功能
+- printk 函数消息级别
+
+
+## 开发环境
+
+
+## 设备的注册与注销
+
+
+
+设备号 `dev_t` 是一个 u32 类型整数。高12位主设备号，低20位次设备号。
+
+主设备号为一类设备。如 IIC 设备类型下面，挂许多具体的器件。
+
+设备号操作的相关宏定义。
+```c
+#define MINORBITS	20
+#define MINORMASK	((1U << MINORBITS) - 1)
+
+#define MAJOR(dev)	((unsigned int) ((dev) >> MINORBITS))
+#define MINOR(dev)	((unsigned int) ((dev) & MINORMASK))
+#define MKDEV(ma,mi)	(((ma) << MINORBITS) | (mi))
+```
+
+此函数，只制定了主次设备号。比较老的函数了。需要手动去看那些号没使用。
+`static inline int register_chrdev(unsigned int major, const char *name, const struct file_operations *fops)`
+
+使用 `cat /proc/devices` 查看主设备号。
 
 
 ## 地址映射 api
@@ -81,4 +151,14 @@ LED 接在 GPIO1_IO03，需要关注的点
   - 0x0209C004
 
 
+## 字符设备驱动注册的另一种方法
+
+前面注册用的 api 我们手动分配了主设备号，在分配前还要手动查一下哪个号没有被用掉。因此，需要一些更好用的 api。
+
+- 自动分配一个设备号，可以用下面这个函数
+  - `int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count, const char *name)`
+- 指定设备号，也可以使用和前面不一样的这个 api
+  - `int register_chrdev_region(dev_t from, unsigned count, const char *name)`
+- 设备注销，使用下面这个函数释放
+  - `void unregister_chrdev_region(dev_t from, unsigned count)`
 

@@ -1,7 +1,7 @@
 ---
 sort: 2
 ---
-# uboot 新板适配
+# u-boot 开发板适配
 
 参考芯片厂商的 SDK。
 
@@ -31,6 +31,12 @@ make V=1 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j16
 
 
 这些设备东西如果和官方的一样，那么芯片原厂的 uboot 是能在自己的开发板上跑起来的。只是有些地方会提示有问题。
+
+烧写 uboot 到 SD 卡
+
+```
+
+```
 
 可以看到，屏幕背点亮了，但是有些异常。NXP 配的屏幕是 480x272 的屏幕。
 

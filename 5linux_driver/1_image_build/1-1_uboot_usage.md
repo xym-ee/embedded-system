@@ -1,21 +1,12 @@
 ---
 sort: 1
 ---
-# uboot 编译与使用
-
-
-
-## 参考资料
-
-
-
+# u-boot 编译与使用
 
 
 ## uboot 简介
 
-uboot(Universal Boot Loader) 是一个综合的裸机程序。现在的 uboot 已经支持液晶屏、网络、USB 等高
-级功能。
-
+uboot(Universal Boot Loader) 是一个综合的裸机程序。现在的 uboot 已经支持液晶屏、网络、USB 等高级功能。
 
 uboot 最主要的工作是初始化 DDR，linux 是运行在 DDR 里的。因此在启动 linux 内核前，就要初始化完成 DDR。对于 6u 芯片，DDR 的初始化代码在芯片 rom 中。因此在 imx 系列芯片，uboot 的代码并不需要去初始化 DDR。但是大部分的芯片都需要在 uboot 中去初始化 DDR。
 
@@ -67,12 +58,15 @@ Kernel image @ 0x80800000 [ 0x000000 - 0x9ab520 ]
 Starting kernel ...
 ```
 
+## 源码编译
 
-## source code 在哪里？
+
+### source code 在哪里？
 
 uboot 的源码
 
 - u-boot 项目
+  - <https://ftp.denx.de/pub/u-boot/>
   - <https://github.com/u-boot/u-boot>
   - 支具体的某款芯片的驱动不完善，但是不断有人会贡献代码，修复bug
 - 芯片厂商适配的 uboot
@@ -85,14 +79,21 @@ uboot 的源码
 
 所以 uboot 移植，实际上是适配自己的板子，真正的最复杂的移植部分厂商的工程师已经解决掉了。
 
+对于 nxp imx6ull 这个芯片，uboot 源码里由这个配置。
 
-## 源码编译
 
-开发板厂商的源码解压缩，初次编译。
+### 源码编译
+
+不论是从哪里得到的源码，编译过程：
 
 ```bash
+# 清理工程
 make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- distclean
+
+# 使用默认配置文件配置编译选项
 make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- mx6ull_14x14_ddr512_emmc_defconfig
+
+# 编译
 make V=1 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j12
 ```
 
@@ -119,10 +120,9 @@ otg 烧写，工具，mfgtools，
 用这个东西烧写会重新烧录所有东西进去。烧写完成设置 emmc 启动，在此启动就能看到编译编译时间。
 
 
-## 自动化脚本
+### 自动化脚本
 
 再精简一下整个流程。
-
 
 ```makefile
 #!/bin/bash
@@ -134,7 +134,6 @@ make V=1 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j12
 通过图形化界面配置后，就不可以 distclean 了。
 
 此外，还可以直接给 Makefile 里的传入的变量赋值，就不用每次输这么多指令了。
-
 
 
 ```bash
@@ -153,59 +152,10 @@ sudo apt install make git gcc-arm-none-eabi gcc bison flex libssl-dev dpkg-dev l
 
 SD 卡插到 imxdownload 中，和裸机下载程序一样。比较方便。
 
-## 启动 log
 
-```
-U-Boot 2020.10-g92bbb671 (Feb 10 2022 - 02:36:31 +0000)
+## u-boot 命令使用
 
-CPU:   Freescale i.MX6ULL rev1.1 792 MHz (running at 396 MHz)
-CPU:   Industrial temperature grade (-40C to 105C) at 41C
-Reset cause: POR
-Model: Freescale i.MX6 UltraLiteLite 14x14 EVK Board
-Board: MX6ULL 14x14 EVK
-DRAM:  512 MiB
-MMC:   FSL_SDHC: 0, FSL_SDHC: 1
-Loading Environment from MMC... OK
-In:    serial
-Out:   serial
-Err:   serial
-Net:   eth1: ethernet@20b4000 [PRIME]Could not get PHY for FEC0: addr 2
-
-Hit any key to stop autoboot:  0
-Unknown command 'lhf' - try 'help'
-switch to partitions #0, OK
-mmc1(part 0) is current device
-loading [mmc 1:1] /uEnv.txt ...
-2584 bytes read in 13 ms (193.4 KiB/s)
-Importing environment from mmc ...
-loading vmlinuz-4.19.35-imx6 ...
-10138912 bytes read in 459 ms (21.1 MiB/s)
-loading imx6ull-mmc-npi.dtb ...
-38529 bytes read in 69 ms (544.9 KiB/s)
-5164702 bytes read in 242 ms (20.4 MiB/s)
-debug: [console=ttymxc0 root=/dev/mmcblk1p2 rw rootfstype=ext4 rootwait coherent_pool=1M net.ifnames=0 vt.global_cursor_default=0] ...
-debug: [bootz] ...
-Kernel image @ 0x80800000 [ 0x000000 - 0x9ab520 ]
-## Flattened Device Tree blob at 83000000
-   Booting using the fdt blob at 0x83000000
-   Using Device Tree in place at 83000000, end 8303cfff
-
-Starting kernel ...
-```
-
-可以看出许多信息
-- CPU信号、主频
-- 开发板型号
-- DRAM 大小
-- MMC，emmc 和 sd 卡都算是 mmc，会显示两个
-- 环境变量就是一些字符串，保存到 mmc 的一个位置，如果没保存 crc 校验失败，是使用默认的环境变量
-- 标准输入标准输出标准错误设置到串口
-- 切换到 #0 分区，
-
-
-
-
-## 基本信息
+### 基本信息
 
 - `help`
 - `help [具体命令]`
@@ -259,7 +209,7 @@ Early malloc usage: 58c / 2000
 - 各种地址，先不关注
 
 
-## 环境变量操作
+### 环境变量操作
 
 - `printenv`
   - 有很多。关注 bootcmd 和 bootargs
@@ -287,7 +237,7 @@ Early malloc usage: 58c / 2000
 - `setenv xymenv`
 
 
-## 内存操作
+### 内存操作
 
 具体的操作，可以看 uboot 中的帮助
 
@@ -298,7 +248,7 @@ Early malloc usage: 58c / 2000
 - `cp`
 - `cmp`
 
-### md(memory display)
+#### md(memory display)
 
 查看指定位置的内存值
 
@@ -307,7 +257,7 @@ Early malloc usage: 58c / 2000
   - `md.w 80000000 128`
   - `md.l 80000000 256`
 
-### nm()
+#### nm()
 
 修改指定位置的值
 
@@ -324,23 +274,23 @@ Early malloc usage: 58c / 2000
 ```
 可以多次修改，按 q 退出。
 
-### mm(memory modify (auto-incrementing address))
+#### mm(memory modify (auto-incrementing address))
 
 
-### mw(memory write (fill))
+#### mw(memory write (fill))
 
 - `mw[.b .w .l] {address} {value} {count}`
 
 
 
-### cp
+#### cp
 
 - `cp[.b .w .l] {source} {target} {count}`
 
 DRAM 中复制，或者NOR FLASH向DRAM复制。
 
 
-## 网络操作
+### 网络操作
 
 在网络操作前，先要联网，用环境变量设置一些信息
 ```
@@ -358,7 +308,7 @@ DRAM 中复制，或者NOR FLASH向DRAM复制。
 
 - `nfs 80800000 192.168.1.201:/home/xym/ws_linux/kernel/zImage`
 
-## mmc sd 卡操作
+### mmc sd 卡操作
 
 - `mmc list`
   - 列出可选的 mmc 设备
@@ -380,7 +330,7 @@ DRAM 中复制，或者NOR FLASH向DRAM复制。
   - `mmc read 80800000 600 10`
 
 
-## FAT 文件系统操作
+### FAT 文件系统操作
 
 - fatinfo
 - fatls
@@ -389,11 +339,11 @@ DRAM 中复制，或者NOR FLASH向DRAM复制。
 - fatwrite
 
 
-## ext4 文件系统操作
+### ext4 文件系统操作
 
 指令类似
 
-## boot 操作
+### boot 操作
 
 最核心的功能。
 
@@ -455,7 +405,7 @@ Kernel panic – not Syncing: VFS: Unable to mount root fs on unknown-block(0,0)
 ```
 
 
-## 其他常用命令
+### 其他常用命令
 
 - `reset`
   - 复位

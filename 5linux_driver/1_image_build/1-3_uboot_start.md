@@ -1,7 +1,7 @@
 ---
 sort: 3
 ---
-# uboot 启动流程
+# u-boot 启动流程分析
 
 使用 vscode 远程访问虚拟机的 uboot 工程文件夹
 
