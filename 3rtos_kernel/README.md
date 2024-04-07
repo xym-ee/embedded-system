@@ -1,7 +1,7 @@
 ---
 sort: 3
 ---
-# armv7-m 架构与 rt-thread 设计
+# armv7-m 架构与 RTOS 原理
 
 
 
