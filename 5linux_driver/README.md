@@ -82,19 +82,12 @@ sudo apt install make gcc-arm-linux-gnueabihf gcc bison flex libssl-dev dpkg-dev
 
 ### tftp 服务
 
-
-
 uboot里用来加载 内核等到 DDR 中
-
 
 - `sudo apt install xinetd`
 - 若无`/etc/xinetd.conf`文件，新建一个，内容在后面
 - `sudo apt install tftp-hpa tftpd-hpa`
 - 配置共享文件夹 `sudo vim /etc/default/tftpd-hpa`
-
-
-
-
 
 
 ```
@@ -185,5 +178,16 @@ reboot
 很系统，周期也很长。
 
 基础很重要。linux 内核使用的是 GNU C ，和 C99 还是有区别的。此外写单片机时的面向过程的思维，如果还用这个思路去研究内核代码，也会很难懂。
+
+
+
+
+## 烧系统
+
+
+
+
+
+
 
 

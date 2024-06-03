@@ -3,8 +3,8 @@ sort: 4
 ---
 # linux 应用开发
 
-linux 使用(基于发行版 ubuntu)
-- shell、gcc、makefile、vim
+linux 使用
+- 一些工具 shell、gcc、makefile、vim
 - linux 系统编程
 
 ## linux 开发流程
@@ -54,9 +54,17 @@ linux 使用(基于发行版 ubuntu)
 基础很重要。linux 内核使用的是 GNU C ，和 C99 还是有区别的。此外写单片机时的面向过程的思维，如果还用这个思路去研究内核代码，也会很难懂。
 
 
-## 开发前准备
+## 开发前准备，开发环境
 
-交叉编译环境。
+
+### 虚拟机+ubuntu
+
+- vmware workstation
+- ubuntu
+  - 安装 vmware-tools ：开源 `sudo apt install open-vm-tools-desktop`
+
+
+### 交叉编译环境
 
 嵌入式处理器，arm 架构，性能相比x86桌面处理器还是有差距，因此在 x86 上将源代码编译为 arm 架构上的可执行文件。
 
@@ -99,11 +107,6 @@ uboot里用来加载 内核等到 DDR 中
 - 若无`/etc/xinetd.conf`文件，新建一个，内容在后面
 - `sudo apt install tftp-hpa tftpd-hpa`
 - 配置共享文件夹 `sudo vim /etc/default/tftpd-hpa`
-
-
-
-
-
 
 ```
 # Simple configuration file for xinetd

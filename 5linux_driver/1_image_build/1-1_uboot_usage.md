@@ -103,13 +103,15 @@ make V=1 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j12
 
 makefile 里要判断架构，相当于传入参数里设置了架构。以及使用的交叉编译器。
 
+可以直接在 makefile 里定义 ARCH 和 CROSS_COMPILE 两个变量，这样以后在输命令的时候会快一点。
+
 编译完成后，会出来一些文件。
 
 - uboot.bin 编译完成无法启动，需要添加其他信息(imx系列)。这里从编译信息可以看到最后一步
 
 ./tools/mkimage -n board/freescale/mx6ullevk/imximage-ddr512.cfg.cfgtmp -T imximage -e 0x87800000 -d u-boot.bin u-boot.imx
 
-用这个工具完成的。最终可以用的是 `u-boot.imx`
+这里能看出用了 tools 里的 mkimage 这个工具完成的。最终可以用的是 `u-boot.imx`，这个文件可以使用 NXP 官方的 mfgtools 来烧写。
 
 otg 烧写，工具，mfgtools，
 - firmware 先下载到 DDR 里的中间系统
@@ -119,6 +121,7 @@ otg 烧写，工具，mfgtools，
 
 用这个东西烧写会重新烧录所有东西进去。烧写完成设置 emmc 启动，在此启动就能看到编译编译时间。
 
+如果想要方便一点用读卡器烧写到 SD 卡，则需要 imxdownload 工具将 uboot.bin 烧写，(imxdownload工具会读.bin 拼接上IVT 和 DCD 然后再烧写到 SD 卡)。
 
 ### 自动化脚本
 
