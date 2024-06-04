@@ -173,5 +173,5 @@ lds 的 text 段最开始，`. = 0` 会被重新配置为87800000。整个text�
 
 `arch/arm/lib/vector.S` 中的 `_start` 是上电的入口。第一条指令 `b reset` ，相当于复位中断。
 
-
+reset 函数在 `arch/arm/cpu/armv7/start.S` 中定义。这也是链接脚本中能看到的紧跟在 `.vectors` 段后的要被链接的代码段所在的文件。
 
