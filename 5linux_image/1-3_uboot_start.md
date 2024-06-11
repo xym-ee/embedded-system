@@ -169,9 +169,215 @@ lds 的 text 段最开始，`. = 0` 会被重新配置为87800000。整个text�
 一些关注的段，以及标识符，这些段的起始地址和结束地址后面都会用到。
 
 
-## 启动流程
+## 启动流程：架构初始化
 
-`arch/arm/lib/vector.S` 中的 `_start` 是上电的入口。第一条指令 `b reset` ，相当于复位中断。
+`arch/arm/lib/vector.S` 中的 `_start` 是上电的入口。第一条指令 `b reset` ，相当于复位中断。reset 函数在 `arch/arm/cpu/armv7/start.S` 中定义。这也是链接脚本中能看到的紧跟在 `.vectors` 段后的要被链接的代码段所在的文件。
 
-reset 函数在 `arch/arm/cpu/armv7/start.S` 中定义。这也是链接脚本中能看到的紧跟在 `.vectors` 段后的要被链接的代码段所在的文件。
+`reset` 调用了 `save_boot_params` 函数，此函数调用`save_boot_params_ret` ，又回到 reset 了，预留了接口，可能有的芯片需要保存一下启动参数。总之是要读取 cpsr 寄存器，来判断 CPU 所处的模式，并将处理器模式设置为 SVC 模式，关闭 FIQ 和 IRQ 中断。
+
+设置向量表重定位，需要把 SCTLR 寄存器中 V 设置为 0，才可以重定位。取 _start 这个地址。之后设置 CP15 寄存器，Cache、MMU、TLB 等。
+
+之后执行 cpu_init_crit ，配置关键寄存器和初始化，这里调用了 lowlevel_init，lowlevel_init 定义在 `arch/arm/cpu/armv7/lowlevel_init.S` 中，这个函数主要用来设置栈指针和 r9 寄存器。
+
+- 设置 sp 指向 CONFIG_SYS_INIT_SP_ADDR=0X0091FF00 ，即芯片内部的 IRAM 地址和大小，
+- 设置 SP 8字节对齐，即清除低 3 bit
+- 设置 gd (global data) 为 248 Byte
+- 将 SP 地址保存在 r9 寄存器中
+- ip lr 入栈
+- 跳转 s_init
+- ip lr 出栈，lr 赋值给 pc
+
+这部分就是把 SP 指针指向芯片内部 128K 空出 256字节*248字节 之后的地址。r9 在后面比较重要。。
+
+s_init 函数要做的是初始化时钟，但是mx系列芯片并不需要在这里配置。因此直接返回就好了。然后又返回到 reset 这边了、这时候架构初始化就完成了，可以进入到板级初始化了。调佣 _main
+
+此函数定义在 `arch/arm/lib/crt0.S` 中
+
+
+lowlevel_init 做的事情
+- 让系统能够执行到 `board_init_f`
+- 无全局数据或bss
+- 没有栈
+
+
+
+## 启动流程：板级初始化
+
+
+_main 中做的事情
+- 1. 初始化基本的C运行环境并调用 `board_init_f` 基本外设初始化
+  - 全局数据可以用
+  - 堆栈在片内 SRAM 中
+  - bss不可用，无法使用全局变量和静态变量，只能用堆栈上的东西和全局数据
+- 2. 重定位 uboot 代码
+- 3. 设置完整的运行环境，并调用 `board_init_r` 完成所有外设初始化
+  - 完整的环境
+  - C 语言所有需要的东西都准备完毕，
+
+
+_main 执行的流程
+- 设置栈指针
+- 调用 `board_init_f_alloc_reserve`
+  - 留出这个阶段 malloc 内存区域
+- 调用 `board_init_f_init_reserve` 
+- 调用 `board_init_f(0)`
+
+- 重定位代码 `relocate_code`
+- 重定位向量表 `relocate_vectors`
+- 配置完整的 C 运行环境 `c_runtim_cpu_setup`
+- 清除 bss 段
+- 跳转 `board_init_r` 后面所有的程序都为 C 语言实现
+
+
+
+
+
+Board Initialisation Flow:
+--------------------------
+
+This is the intended start-up flow for boards. This should apply for both
+SPL and U-Boot proper (i.e. they both follow the same rules).
+
+Note: "SPL" stands for "Secondary Program Loader," which is explained in
+more detail later in this file.
+
+At present, SPL mostly uses a separate code path, but the function names
+and roles of each function are the same. Some boards or architectures
+may not conform to this.  At least most ARM boards which use
+CONFIG_SPL_FRAMEWORK conform to this.
+
+Execution typically starts with an architecture-specific (and possibly
+CPU-specific) start.S file, such as:
+
+	- arch/arm/cpu/armv7/start.S
+	- arch/powerpc/cpu/mpc83xx/start.S
+	- arch/mips/cpu/start.S
+
+and so on. From there, three functions are called; the purpose and
+limitations of each of these functions are described below.
+
+lowlevel_init():
+	- purpose: essential init to permit execution to reach board_init_f()
+	- no global_data or BSS
+	- there is no stack (ARMv7 may have one but it will soon be removed)
+	- must not set up SDRAM or use console
+	- must only do the bare minimum to allow execution to continue to
+		board_init_f()
+	- this is almost never needed
+	- return normally from this function
+
+board_init_f():
+	- purpose: set up the machine ready for running board_init_r():
+		i.e. SDRAM and serial UART
+	- global_data is available
+	- stack is in SRAM
+	- BSS is not available, so you cannot use global/static variables,
+		only stack variables and global_data
+
+	Non-SPL-specific notes:
+	- dram_init() is called to set up DRAM. If already done in SPL this
+		can do nothing
+
+	SPL-specific notes:
+	- you can override the entire board_init_f() function with your own
+		version as needed.
+	- preloader_console_init() can be called here in extremis
+	- should set up SDRAM, and anything needed to make the UART work
+	- these is no need to clear BSS, it will be done by crt0.S
+	- must return normally from this function (don't call board_init_r()
+		directly)
+
+Here the BSS is cleared. For SPL, if CONFIG_SPL_STACK_R is defined, then at
+this point the stack and global_data are relocated to below
+CONFIG_SPL_STACK_R_ADDR. For non-SPL, U-Boot is relocated to run at the top of
+memory.
+
+board_init_r():
+	- purpose: main execution, common code
+	- global_data is available
+	- SDRAM is available
+	- BSS is available, all static/global variables can be used
+	- execution eventually continues to main_loop()
+
+	Non-SPL-specific notes:
+	- U-Boot is relocated to the top of memory and is now running from
+		there.
+
+	SPL-specific notes:
+	- stack is optionally in SDRAM, if CONFIG_SPL_STACK_R is defined and
+		CONFIG_SPL_STACK_R_ADDR points into SDRAM
+	- preloader_console_init() can be called here - typically this is
+		done by defining CONFIG_SPL_BOARD_INIT and then supplying a
+		spl_board_init() function containing this call
+	- loads U-Boot or (in falcon mode) Linux
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 启动流程总览
+
+### XIP 设备
+
+XIP 的概念。芯片上有 CPU、SRAM、Flash只读ROM、还有各种外设控制器。
+
+芯片一通电就必须要有指令来执行，无论外挂的东西是什么样的，arm 内核必定从 0x0 开始取第一条指令。
+
+从硬件上来说，芯片内部的要有数据总线和地址总线连接的存储设备，这就是 XIP 设备，execute in place，即代码存在这个设备里，代码可以直接被CPU读取执行。
+
+对于 NAND Flash 来说，芯片上是 flash 控制器，CPU 需要通过控制器来间接访问 flash。这种情况下，做不到一上电就直接访问。flash 控制器是一个比较复杂的设备，需要一系列复杂的指令通过控制器读 flash 的第一条指令。所以flash 里的第一条指令没法在一上电执行。
+
+所以 flash 里的第一条指令距离一上电执行的第一条指令已经过去好多了。所以支持 NAND SD 这些设备启动的芯片，芯片里必定有 boot ROM，必须要有一个 ROM 设备，提供给芯片一上电来执行，把 NAND flash 复制到 RAM ，然后跳转取执行。
+
+boot ROM 的作用：硬件初始化，把程序从非 XIP 设备复制到 RAM，从RAM里执行代码。
+
+所以支持多种设备启动的芯片一般都有拨码开关来设置启动的设备，bootROM读取设置，然后做对应的处理。比如 NAND FLASH ，初始化控制器，搬到RAM，跳转执行。NOR flash，直接取执行。
+
+### uboot 拷贝
+
+支持非 XIP 设备启动芯片里必定有 boot ROM，一般来说还有片内 SRAM，此外还有外接巨大容量的 DDR，DDR需要配置初始化后才能当做内存使用。boot ROM 一般也是 C 语言开发的，既然是 C 语言，就有栈的问题。完全用汇编写代码的话，就不用栈了，然后也完全不用 RAM 了。所以芯片内部的 RAM 是给 boot ROM 提供栈的。boot ROM 最终目的是把非 XIP 设备上的程序读进片内 RAM 里。boot ROM 不知道如何初始化不同型号的 DDR，所以这部分代码需要用户去实现，所以这部分代码必定会被读入片内 SRAM，然后执行.
+
+片内 SRAM 很贵，最大也就几百k，如果说用户的程序很大，这时候该如何处理？比如mx6ull 的片内 RAM 128KB，uboot 编译出来大概300K出头，这时候的解决方案：
+- boot ROM 只复制前 n K ，前 n k 要保证初始化 DDR 并复制整个程序到 DDR，然后跳转执行。在程序设计的时候就要做好这方面的考虑
+- 用户程序拆成两段代码，SPL代码和应用程序。SPL(secondary program loader) 二级加载，
+
+boot ROM 为一级加载，将 SPL 程序读到 RAM 后运行，SPL 实现二级加载读取整个用户程序到 DDR。
+
+
+注意：直接将 uboot 拷贝至其他地方后，函数调用、全局变量引用可能会出问题。
+
+代码的地址最终是有连接程序决定的，如果 SPL 代码把程序正好复制到了 DDR 上的链接的地址，那么所有的东西都好说，各个调用都没问题，相对跳转和绝对跳转都没有关系链接地址和实际地址都能对得上。所以说一个程序“应该”位于链接地址的位置，如果复制的时候不在链接地址上，需要处理一下
+- 把自己复制到应该在的位置
+- 修改代码，自己改自己改成正确的位置
+
+uboot 采用位置无关码来处理该类问题（简单说采用相对地址寻址，而不是采用绝对地址寻址，并且重定位后需要将Label+offset）。在使用 ld 进行链接的时候使用选项”- pie” 生成位置无关的可执行文件。具体为.rel.dyn段。
+
+### 启动流程
+
+
+带 SPL 程序的启动流程
+- boot ROM 从 flash 中读 SPL 程序到片内 SRAM
+- SPL 完成 DDR 初始化，并从 flash 中读 uboot 到 DDR 中，跳转执行
+- uboot 重定位，把自己挪到比较靠上的地方，为 kernel 留出空间
+
+无 SPL 的启动流程，功能比较强大的芯片bootROM能完成更多的功能，6ull就是这样的，flash里只有uboot，头部有一些DDR的配置信息
+- bootROM 初始化 DDR，并把 uboot 复制到 DDR 中
+- 跳转到 uboot 运行
+- uboot 重定位
+
+
+
+
+
+
 

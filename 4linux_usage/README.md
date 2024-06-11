@@ -94,8 +94,8 @@ linux 使用
 - `showmount -e` 可以看到挂载的共享目录
 
 开发板挂载共享文件系统
-- `mount -t nfs 10.0.0.10:/home/xym/ws_linux /mnt`
-- `mount -t nfs -o nolock,nfsvers=3 10.0.0.10:/home/xym/ws_linux /mnt`
+- `mount -t nfs 10.0.0.22:/home/xym/ws_linux /mnt`
+- `mount -t nfs -o nolock,nfsvers=3 10.0.0.22:/home/xym/ws_linux /mnt`
 
 
 ## tftp
@@ -107,7 +107,7 @@ uboot里用来加载 内核等到 DDR 中
 - 若无`/etc/xinetd.conf`文件，新建一个，内容在后面
 - `sudo apt install tftp-hpa tftpd-hpa`
 - 配置共享文件夹 `sudo vim /etc/default/tftpd-hpa`
-
+  - 第三行，改成需要共享的文件夹
 ```
 # Simple configuration file for xinetd
 #

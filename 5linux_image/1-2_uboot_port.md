@@ -34,9 +34,6 @@ make V=1 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j16
 
 烧写 uboot 到 SD 卡
 
-```
-
-```
 
 可以看到，屏幕背点亮了，但是有些异常。NXP 配的屏幕是 480x272 的屏幕。
 
@@ -82,7 +79,7 @@ Bad Linux ARM zImage magic!
 
 可以看到，DRAM 识别出来了，Net 初始化失败，mmc 通过命令测试驱动正常，SD 必然正常。
 
-所以，记下来移植这套代码，要把不正常的驱动改正常。即在官方开发板修改使得支持自己的开发板。
+所以，接下来移植这套代码，要把不正常的驱动改正常。即在官方开发板修改使得支持自己的开发板。
 
 
 ## 适配自己的开发板
@@ -202,27 +199,33 @@ uboot 最终目的，启动 kernel，
 
 ### 从 EMMC 启动
 
-现在的 uboot 在 SD 卡中。要去启动 MMC 中的 kernel
+现在的 uboot 在 SD 卡中。要去启动 MMC 中的 kernel，kernel 已经烧写在 mmc 了，要确定这里有内核。
 
 先确定mmc 中有内核 `fatls mmc 1:1`
 
 ```
-mmc dev 1
+mmc dev 1                                   #切换当前设备为 mmc
+fatls mmc 1:1                               #查看此分区的文件
 fatload mmc 1:1 80800000 zImage
 fatload mmc 1:1 83000000 imx6ull-14x14-emmc-4.3-800x480-c.dtb
 bootz 80800000 - 83000000
 ```
 
-```
-setenv bootcmd 'mmc dev 1; fatload mmc 1:1 80800000 zImage; fatload mmc 1:1 83000000 imx6ull-14x14-emmc-4.3-800x480-c.dtb; bootz 80800000 - 83000000;'
-```
-
+启动后，内核可以启动起来，但是有点小问题，还需要设置环境变量，指定根文件系统的位置。
 
 ```
 setenv bootargs 'console=ttymxc0,115200 root=/dev/mmcblk1p2 rootwait rw'
 setenv bootcmd 'mmc dev 1; fatload mmc 1:1 80800000 zImage; fatload mmc 1:1 83000000
 imx6ull-alientek-emmc.dtb; bootz 80800000 - 83000000;'
 ```
+
+
+可以把这个命令设置为自动运行的启动命令。
+```
+setenv bootcmd 'mmc dev 1; fatload mmc 1:1 80800000 zImage; fatload mmc 1:1 83000000 imx6ull-14x14-emmc-4.3-800x480-c.dtb; bootz 80800000 - 83000000;'
+```
+
+此外，还可以在屏幕上也启动一个控制台。
  
 setenv bootargs 'console=tty1 console=ttymxc0,115200 root=/dev/mmcblk1p2 rootwait rw'
 
@@ -239,6 +242,11 @@ bootz 80800000 - 83000000
 
 
 ```
-
+tftp 80800000 zImage
+tftp 83000000 imx6ull-alientek-emmc.dtb
+bootz 80800000 - 83000000
 ```
 
+```
+setenv bootcmd 'tftp 80800000 zImage; tftp 83000000 imx6ull-alientek-emmc.dtb; bootz 80800000 - 83000000;'
+```
