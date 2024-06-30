@@ -1,8 +1,54 @@
 ---
-sort: 1
+sort: 3
 ---
 # led 驱动开发
 
+
+
+## led 基本驱动
+
+- 字符设备注册
+- 设备号分配
+
+## class 下的 led 驱动
+
+- 私有数据
+
+
+
+## misc 下的 led 驱动
+
+
+
+
+## 设备树下的 led 驱动
+
+使用设备树向 linux 内核传递寄存器物理地址，驱动通过 of 函数从设备树中获得需要的属性值，然后通过这些属性来初始化相关的寄存器。
+
+- .dts 设备树中新增 led 节点及相关属性
+- 驱动程序中使用 of 获得相关属性值
+- 初始化对应寄存器
+
+```dts
+mini_led {
+  #address-cells = <1>;
+  #size-cells = <1>;
+  compatible = "mini-led";
+  status = "okay";
+  reg = < 0x020C406C	0x04	/* CCM_CCGR1_BASE			*/
+      0x020E0068	0x04	/* SW_MUX_GPIO1_IO03_BASE	*/
+      0x020E02F4	0x04	/* SW_PAD_GPIO1_IO03_BASE	*/
+      0x0209C000	0x04	/* GPIO1_DR_BASE			*/   
+      0x0209C004	0x04	/* GPIO1_GDIR_BASE			*/
+      >;
+};
+```
+
+设备树根节点中，添加内容。
+
+
+
+---
 
 - linux 模块，虚拟设备
 - 字符设备驱动框架

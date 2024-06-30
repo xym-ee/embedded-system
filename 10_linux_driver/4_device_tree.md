@@ -1,21 +1,20 @@
 ---
-sort: 2
+sort: 3
 ---
 # 设备树
 
-新版本的 Linux 中，ARM 相关的驱动全部采用了设备树。
 
-uboot 启动时，加载了 zImage 和 dtb 到 DDR 里。用 `bootz 80800000 - 83000000` 启动。其中 `83000000` 存放的就是设备树。
+
+新版本的 Linux 中，ARM 相关的驱动全部采用了设备树。uboot 启动时，加载了 zImage 和 dtb 到 DDR 里。用 `bootz 80800000 - 83000000` 启动。其中 `83000000` 存放的就是设备树。
+
+在现在的 linux 源码中，`arch/arm/mach-xxxx` 或者 `arch/arm/plat-xxxx` 下的 .c 文件都是用来描述板级的区别的。用 C 语言来描述整个板上的设备信息。
+
+然而，一款 CPU 可以设计出来的开发板太多了，如果每个开发板都用 .c 写死，带来的问题是，如果硬件上的改变，必须要编译整个内核。linux 本身提供的应该是功能上的东西，对于这种板级的描述信息，硬编码进内核是不合适的。这也是 dts 引入 arm 的原因。
 
 设备树是嵌入式 linux 驱动工程师掌握的必备技能。
 
 描述设备树的文件叫做 DTS(Device Tree Source)，这个 DTS 文件采用树形结构描述板级设备。设备数的存在也是为了把硬件相关的东西剥离出内核本身。
 
-在现在的 linux 源码中，`arch/arm/mach-xxxx` 或者 `arch/arm/plat-xxxx` 下的 .c 文件都是用来描述板级的却区别的。用 C 语言来描述整个板上的设备信息。
-
-单片机的驱动，直接写死，绝对有代码，可以用在所有芯片上。
-
-然而，一款 CPU 可以设计出来的开发板太多了，如果每个开发板都用 .c 写死，带来的问题是，如果硬件上的改变，必须要编译整个内核。当然这不是最主要的问题，最关键的，linux 本身提供的功能上的东西，对于这种板级的描述信息，硬编码进内核，是不合适的。这也是 dts 引入 arm 的原因。
 
 设备树源文件为 `*.dts`，编译出来的设备树二进制文件为 `*.dtb`，编译工具为 `dtc` 工具。
 
@@ -32,7 +31,95 @@ dtc 工具在 scripts 中，由 gcc 编译器编译出 dtc 工具。
 `arch/arm/boot/dts` 里的 makefile 根据架构型号，确定编译对应架构的开发板的设备树。因此，新增开发板对应的设备树，要记得在此文件中新增。
 
 
-## 基本语法
+##
+
+### 基本语法
+
+
+```dts
+/* 注释 */
+
+node_label: node_name@@address{
+    string-propty = "a string";
+    string-list = "string1", "string2";
+    int-property = <202>;
+    int-list-property = <0xbeef 123 0xabcd4>;   /* uint32_t */
+    mixed-list-property = "string", <0xdeadbeef>, <35>;
+    byte-array-property = [0x01 0x55 0xaa];     
+};
+
+```
+
+node_name 是必须的，@address 可选，如果节点是可寻址设备。
+
+```dts
+i2c1: i2c@021a0000 {
+    compatible = "fsl,imx6ul-i2c", "fsl,imx21-i2c";
+    reg = <0x021a0000 0x4000>;
+};
+```
+
+标签node_label可以看做一个节点的指针，使用 &node_label 即引用此节点。(C语言中取地址)
+
+
+### 表示和寻址设备
+
+每个设备在设备树里至少有一个节点。
+
+每个可寻址的设备都有 reg 属性
+
+
+
+
+
+### 标准属性
+
+- `compatible` 属性，兼容性属性，字符串列表，用于将设备和驱动匹配
+- `model` 属性，字符串，用于描述设备模块信息
+- `status` 属性，字符串，设备状态信息
+  - `"okay"` 设备是可操作的
+  - `"disabled"` 表明设备当前是不可操作的，但是在未来可以变为可操作的，比如热插拔设备插入以后。
+  - `"fail"` 表明设备不可操作，设备检测到了一系列的错误，而且设备也不大可能变得可操作
+- `#address-cells` 和 `#size-cells` 都是uint32_t 类型的
+  - 可以用在任何有子节点的设备中，用于描述子节点的地址信息
+  - address-cells 决定了 reg 属性中地址的字长(32bit)
+  - size-cells 决定了 reg 属性中长度占用的字长
+  - 表明直接点改如何设置 reg 属性值
+- `reg` 属性，一般为`<address length>` 格式，描述设备地址空间信息
+- `ranges` 地址转换表，由子地址、父地址和地址空间长度组成
+
+
+
+一些特殊的属性
+
+根节点属性 `compatible = "fsl,imx6ull-14x14-evk", "fsl,imx6ull";`，匹配驱动，根节点的此属性一般第一个为设备(板子)名字，第二个为SOC名字。内核启动后会查根节点的 compatible 来看是否支持此设备。
+
+在 `arch/arm/mach-imx/mach-imx6ulc.` 中有
+
+```c
+static const char *imx6ul_dt_compat[] __initconst = {
+	"fsl,imx6ul",
+	"fsl,imx6ull",
+	NULL,
+};
+
+DT_MACHINE_START(IMX6UL, "Freescale i.MX6 Ultralite (Device Tree)")
+	.map_io		= imx6ul_map_io,
+	.init_irq	= imx6ul_init_irq,
+	.init_machine	= imx6ul_init_machine,
+	.init_late	= imx6ul_init_late,
+	.dt_compat	= imx6ul_dt_compat,
+MACHINE_END
+```
+
+这样一个结构体 dt_compat，设备树根节点下 compatible 中 `"fsl,imx6ull"` 值和 .dt_compat 中 `"fsl,imx6ull"` 值匹配，因此linux内核支持此设备。
+
+
+如果修改这两边的字符串不相同，那么内核就卡柱无法启动了。
+
+
+---
+
 
 设备树的头文件为 `.dtsi`，设备树也可以引用 `.h` 头文件，也可以引用 `.dts` 文件。在行为上，只是相当于把整个文件的内容复制过去，本质上都是文本文件，后缀只是给人看的。
 
@@ -44,7 +131,7 @@ dtc 工具在 scripts 中，由 gcc 编译器编译出 dtc 工具。
 
 
 开发板的 dts 中，先去包含一些东西
-```
+```dts
 /dts-v1/;
 
 #include <*.h>
@@ -76,7 +163,7 @@ dtc 工具在 scripts 中，由 gcc 编译器编译出 dtc 工具。
 
 三个文件拼接起来的设备树：
 
-```
+```dts
 / {
     #address-cells = <1>;       /* skeleton.dtsi */
     #size-cells = <1>;          /* skeleton.dtsi */
@@ -127,7 +214,7 @@ dtc 工具在 scripts 中，由 gcc 编译器编译出 dtc 工具。
 
 一个追加内容的例子，imx6ull 中 soc 节点下的 aips2 结点下的 i2c1
 
-```
+```dts
 i2c1: i2c@021a0000 {
     #address-cells = <1>;
     #size-cells = <0>;
@@ -141,7 +228,7 @@ i2c1: i2c@021a0000 {
 
 在不同的开发板上，如果挂了外设，就需要新增子节点，使用引用的方式
 
-```
+```dts
 &i2c1 {
 	clock-frequency = <100000>;
 	pinctrl-names = "default";
@@ -199,7 +286,6 @@ chosen 并不是一个真实的设备，chosen 节点主要是为了 uboot 向 L
 uboot 将 bootargs 参数传递给 linux 内核，设备树中我们也未设置此参数，显然 uboot 增加了这一属性。
 
 uboot 是知道 dtb 在 DDR 中的位置的，在 uboot 源码的 `common/fdt_support.c` 中有 `fdt_chosen()` 函数，此函数调用了 `fdt_find_or_add_subnode()` 从设备树中找 chosen 结点，没有的话就自己创建一个。然后把 bootargs 用 `fdt_setprop()` 函数写入设备树。
-
 
 
 ## kernel api
