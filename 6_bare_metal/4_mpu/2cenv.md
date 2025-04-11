@@ -16,7 +16,7 @@ sort: 2
 
 两个文件 start.s 和 main.c
 
-```
+```bash
 arm-linux-gnueabihf-gcc -Wall -nostdlib -c -O0 -o start.o start.s
 arm-linux-gnueabihf-gcc -Wall -nostdlib -c -O0 -o main.o main.c
 
