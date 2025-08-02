@@ -1,7 +1,7 @@
 # Table of contents
 
 - [计算机与嵌入式开发学习](README.md)
-- [1-1.编程基础](./1_program_basic/README.md)
+- [1-1.编程基础](./1_program_basic/README.md)   <!---------------------------------------->
   - [C 语言](./1_program_basic/1_c/README.md)
     - [C 中的数据](./1_program_basic/1_c/1data_in_c.md)
     - [C 语言基础](./1_program_basic/1_c/2c_basic.md)
@@ -26,7 +26,7 @@
     - [vim 编辑器](./1_program_basic/6_missing_class/3_vim.md)
     - [命令行数据整理](./1_program_basic/6_missing_class/4_data.md)
     - [命令行环境和配置](./1_program_basic/6_missing_class/5_shell_env.md)
-- [1-2.计算机系统基础(CSAPP)](./2_csapp/README.md)
+- [1-2.计算机系统基础(CSAPP)](./2_csapp/README.md)  <!---------------------------------------->
   - [1.计算机基础](./2_csapp/1计算机基础.md)
   - [2.数据的表示](./2_csapp/2数据的表示.md)
   - [3.加减运算](./2_csapp/3加减运算.md)
@@ -35,11 +35,21 @@
   - [6.IA32指令](./2_csapp/6IA32指令.md)
   - [7.过程调用](./2_csapp/7过程调用.md)
   - [10.程序的链接](./2_csapp/10程序的链接.md)
-- [1-3.数字电路、计算机组成](./3_logic_circuit/README.md)
+- [1-3.数字电路、计算机组成](./3_logic_circuit/README.md)  <!---------------------------------->
   - [1.数字电路、virtual circuit board](./3_logic_circuit/1_logic_vbc/README.md)
-  - [2.计算机组成/steam:Turing Complete](./3_logic_circuit/2_pcwork_tc/README.md)
+  - [2.计算机组成与设计：硬件/软件接口](./3_logic_circuit/3_computer_design/README.md)
+  - [2.steam:Turing Complete](./3_logic_circuit/2_pcwork_tc/README.md)
   - [3.微机原理与接口技术(8086)](./3_logic_circuit/3_8086/README.md)
-- [1-4.计算机网络](./4_network/README.md)
+    - [8086 CPU](./3_logic_circuit/3_8086/1PC与CPU.md)
+    - [x86 指令集与汇编程序](./3_logic_circuit/3_8086/2x86指令.md)
+    - [存储系统](./3_logic_circuit/3_8086/3x86系统存储器.md)
+    - [定时与计数](./3_logic_circuit/3_8086/4定时器.md)
+    - [输入输出数据](./3_logic_circuit/3_8086/5输入输出.md)
+    - [串并行通行](./3_logic_circuit/3_8086/6串并行.md)
+    - [总线技术](./3_logic_circuit/3_8086/7总线技术.md)
+    - [模拟-数字转换](./3_logic_circuit/3_8086/8模拟数字.md)
+    - [高性能计算机技术](./3_logic_circuit/3_8086/9高性能计算机.md)
+- [1-4.计算机网络](./4_network/README.md) <!---------------------------------------->
   - [1.从浏览器开始](./4_network/1_web_overview.md)
   - [2.协议栈和网卡](./4_network/2_netdev.md)
   - [3.网络设备](./4_network/3_equipment.md)
@@ -47,7 +57,7 @@
   - [5.服务器](./4_network/5_server.md)
   - [6.数据返回浏览器](./4_network/6_response.md)
   - [socket编程](./4_network/7_socket.md)
-- [1-5.操作系统](./5_operating_system/README.md)
+- [1-5.操作系统](./5_operating_system/README.md) <!---------------------------------------->
   - [0.绪论](./5_operating_system/1_introduction/README.md)
     - [1.应用视角的操作系统](./5_operating_system/1_introduction/1_应用视角.md)
     - [2.硬件视角的操作系统](./5_operating_system//1_introduction/2_硬件视角.md)
@@ -79,7 +89,7 @@
     - [5.fat 和 unix 文件系统](./5_operating_system/4_persistence/5fat和unix文件系统.md)
     - [6.持久数据的可靠性](./5_operating_system/4_persistence/6持久数据的可靠性.md)
   - [总结](./5_operating_system/5summary.md)
-- [2-1.嵌入式裸机开发](./6_bare_metal/README.md)
+- [2-1.嵌入式裸机开发](./6_bare_metal/README.md) <!---------------------------------------->
   - [嵌入式系统通信接口与协议](./6_bare_meta/1interface/README.md)
   - [cortex-m 内核芯片裸机开发](./6_bare_meta/2_8_16_bit_mcu/README.md)
   - [MPU](./6_bare_meta/4_mpu/README.md)
