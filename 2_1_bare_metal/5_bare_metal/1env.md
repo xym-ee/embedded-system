@@ -6,7 +6,7 @@ C 代码是给人看的，无法直接在 CPU 上运行。可以在 CPU 上执�
 
 ## 工具链
 
-gcc 同样可以用于 arm cortex-m 平添，并且其他的工具如 objdump gdb 也都可以使用。
+gcc 同样可以用于 arm cortex-m 平台，并且其他的工具如 objdump gdb 也都可以使用。
 可以直接用 apt 安装，或者去 arm 官网下载，手动添加到环境变量。
 - gcc-arm-none-eabi
 对于更复杂的应用，可能还需要下面这两个软件包
