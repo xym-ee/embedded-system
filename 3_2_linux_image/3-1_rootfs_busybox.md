@@ -33,27 +33,27 @@ bin 中的命令的源码在 [coreutils](https://github.com/coreutils/coreutils/
 
 nfs 挂载
 
-```
+```sh
 root=/dev/nfs nfsroot=10.0.0.10:/home/xym/ws_linux/rootfs,proto=tcp rw
 ip=10.0.0.11:10.0.0.10:10.0.0.1:255.255.255.0::eth0:off
 ```
 
 启动参数
-```
+```sh
 setenv bootargs 'console=ttymxc0,115200 root=/dev/nfs nfsroot=10.0.0.22:/home/xym/ws_linux/rootfs,proto=tcp,nfsvers=3 rw ip=10.0.0.11:10.0.0.22:10.0.0.1:255.255.255.0::eth0:off'
 ```
 
-```
+```sh
 setenv bootargs 'console=tty1 console=ttymxc0,115200 root=/dev/nfs nfsroot=10.0.0.22:/home/m/nfs/rootfs,proto=tcp,nfsvers=3 rw ip=10.0.0.11:10.0.0.22:10.0.0.1:255.255.255.0::eth0:off' 
 ```
 
 uboot 有比较强的容错能力，可能首选非从 nfs 挂载，遇到这种情况，手动写死 bootcmd
 
-```
+```sh
 setenv bootcmd 'tftp 80800000 zImage; tftp 83000000 imx6ull-mini.dtb; bootz 80800000 - 83000000;'
 ```
 
-```
+```sh
 setenv bootcmd 'mmc dev 1; fatload mmc 1:1 80800000 zImage; fatload mmc 1:1 83000000 imx6ull-14x14-emmc-4.3-800x480-c.dtb; bootz 80800000 - 83000000;'
 ```
 

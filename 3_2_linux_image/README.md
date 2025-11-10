@@ -75,3 +75,21 @@ C 运行时库会把系统调用封装的更加易用。在这些封装函数中
 
 根文件系统中文件夹的结构由FHS（文件系统结构标准）定义。FHS定义了很多文件类型和文件夹的名字、路径和权限。这样可以确保不同Linux发行版本的兼容性，同时允许应用程序做出预设：到哪里可以找到特定的系统文件和配置。
 
+
+
+
+## 环境搭建
+
+imx6ull 
+
+编译工具链 Linaro GCC 4.9
+
+<https://releases.linaro.org/components/toolchain/binaries/4.9-2017.01/arm-linux-gnueabihf/>
+
+
+环境变量添加工具链路径
+
+
+
+
+

@@ -20,7 +20,7 @@ CROSS_COMPILE	?= arm-linux-gnueabihf-
 
 指令编译
 
-```
+```bash
 make distclean
 make imx_v7_defconfig
 make menuconfig
@@ -47,16 +47,16 @@ sudo update-alternatives --config g++
 得到 evk 对应的 kernel 和 `imx6ull-14x14-evk.dtb`。uboot 引导测试一下。
 
 可以设置  bootargs 为
-```
+```sh
 console=ttymxc0,115200 root=/dev/mmcblk1p2 rootwait rw
 ```
 
 或者就直接
-```
+```sh
 console=ttymxc0,115200
 ```
 
-```
+```sh
 tftp 80800000 zImage
 tftp 83000000 imx6ull-14x14-evk.dtb
 bootz 80800000 - 83000000
