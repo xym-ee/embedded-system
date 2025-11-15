@@ -60,6 +60,26 @@ Starting kernel ...
 
 ## 源码编译
 
+### 编译工具链
+
+对于 fish 这个 shell，在 `~/.config/fish/config.fish` 中保存了配置文件，每次启动时都会执行。等同 `~/.bashrc`
+
+```sh
+if status is-interactive
+    # Add linaro toolchain only if not exists
+    if not contains /home/m/ws_linux/gcc/linaro-4.9.4/bin $PATH
+        set -gx PATH $PATH /home/m/ws_linux/gcc/linaro-4.9.4/bin
+    end
+
+    # Add imxflash only if not exists
+    if not contains /home/m/ws_linux/imxflash $PATH
+        set -gx PATH $PATH /home/m/ws_linux/imxflash
+    end
+end
+```
+
+将工具链路径添加到环境变量
+
 
 ### source code 在哪里？
 
@@ -95,7 +115,14 @@ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- mx6ull_14x14_ddr512_emmc_defcon
 
 # 编译
 make V=1 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j12
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j12
 ```
+
+编译 uboot 需要的一些额外的工具
+```sh
+sudo apt install -y build-essential libssl-dev bison flex bc
+```
+
 
 - 工程清理。`ARCH=arm` 设置目标为 arm 架构，`CROSS_COMPILE` 指定所使用的交叉编译器。第一条命令相当于“make distclean”，清除工程
 - 配置 uboot。`make mx6ull_14x14_ddr512_emmc_defconfig`，使用默认配置文件，把配置项写到 `.config` 里
@@ -103,25 +130,53 @@ make V=1 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j12
 
 makefile 里要判断架构，相当于传入参数里设置了架构。以及使用的交叉编译器。
 
-可以直接在 makefile 里定义 ARCH 和 CROSS_COMPILE 两个变量，这样以后在输命令的时候会快一点。
+可以直接在 makefile 里定义 `ARCH` 和 `CROSS_COMPILE` 两个变量，这样以后在输命令的时候会快一点。
 
 编译完成后，会出来一些文件。
 
-- uboot.bin 编译完成无法启动，需要添加其他信息(imx系列)。这里从编译信息可以看到最后一步
+- `uboot.bin` 编译完成无法启动，需要添加其他信息(imx系列)。这里从编译信息可以看到最后一步
 
+```sh
 ./tools/mkimage -n board/freescale/mx6ullevk/imximage-ddr512.cfg.cfgtmp -T imximage -e 0x87800000 -d u-boot.bin u-boot.imx
+```
 
 这里能看出用了 tools 里的 mkimage 这个工具完成的。最终可以用的是 `u-boot.imx`，这个文件可以使用 NXP 官方的 mfgtools 来烧写。
 
-otg 烧写，工具，mfgtools，
+
+## uboot 烧录
+
+USB-OTG 烧写用到的工具是 mfgtools，
 - firmware 先下载到 DDR 里的中间系统
 - files 最终下载到 mmc 里的系统。
 
-替换文件即可。
+想要烧写替换成自己的文件即可。用这个东西烧写会重新烧录所有东西进去，烧写完成设置 emmc 启动，在此启动就能看到编译编译时间。
 
-用这个东西烧写会重新烧录所有东西进去。烧写完成设置 emmc 启动，在此启动就能看到编译编译时间。
+想要方便一点可以用读卡器烧写到 SD 卡，对于 uboot 来说，自己手动在 uboot.bin 前加上 IVT 和 DCD，(imxdownload 工具源码使用 C 语言实现)。
 
-如果想要方便一点用读卡器烧写到 SD 卡，则需要 imxdownload 工具将 uboot.bin 烧写，(imxdownload工具会读.bin 拼接上IVT 和 DCD 然后再烧写到 SD 卡)。
+imxdownload 编译成可执行文件后，可以将路径添加在环境变量，方便 flash 命令的使用。`~/.config/fish/config.fish` 里加一条命令
+
+
+```sh
+if status is-interactive
+    # Add linaro toolchain only if not exists
+    if not contains /home/m/ws_linux/gcc/linaro-4.9.4/bin $PATH
+        set -gx PATH $PATH /home/m/ws_linux/gcc/linaro-4.9.4/bin
+    end
+
+    # Add imxflash only if not exists
+    if not contains /home/m/ws_linux/imxflash $PATH
+        set -gx PATH $PATH /home/m/ws_linux/imxflash
+    end
+end
+```
+
+SD 卡连接到 ubuntu 虚拟机，可以使用 `lsblk` 查看块设备，或者在 `ls /dev/sd*` 看到多出来的 SD 卡设备。
+
+烧写指令
+
+`flash u-boot.bin /dev/sdb`
+
+
 
 ### 自动化脚本
 
@@ -367,14 +422,14 @@ bootz 用来启动 zImage，命令格式
 
 
 nfs 网络启动
-```
+```sh
 nfs 80800000 192.168.1.201:/home/home/ws_linux/kernel/zImage
 nfs 83000000 192.168.1.201:/home/home/dtb/imx6ull-14x14-emmc-7-1024x600-c.dtb
 bootz 80800000 - 83000000
 ```
 
 mmc 启动
-```
+```sh
 fatload mmc 1:1 80800000 zImage
 fatload mmc 1:1 83000000 imx6ull-14x14-emmc-4.3-800x480-c.dtb
 bootz 80800000 - 83000000
@@ -385,14 +440,14 @@ bootm 和 bootz 类似。
 
 boot 命令会读取环境变量 bootcmd 来启动系统。即启动命令的集合。
 
-```
+```sh
 setenv bootcmd 'tftp 80800000 zImage; tftp 83000000 imx6ull-14x14-emmc-7-1024x600-c.dtb;
 bootz 80800000 - 83000000'
 saveenv
 boot
 ```
 
-```
+```sh
 setenv bootcmd 'fatload mmc 1:1 80800000 zImage; fatload mmc 1:1 83000000 imx6ull-14x14-
 emmc-7-1024x600-c.dtb; bootz 80800000 - 83000000'
 savenev
@@ -403,7 +458,7 @@ uboot 倒计时结束，执行的就是 bootcmd 中的启动命令。
 
 
 这时候在启动内核时会遇到下面的错误
-```
+```sh
 Kernel panic – not Syncing: VFS: Unable to mount root fs on unknown-block(0,0)
 ```
 

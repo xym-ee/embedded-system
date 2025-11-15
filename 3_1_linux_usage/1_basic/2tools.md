@@ -36,6 +36,29 @@ sort: 2
 在虚拟机安装时，一般使用桥接网卡的模式，这样在网络上，虚拟机和物理机有一样的地位，可以分配一个固定的 IP，方便后面通过网络做更多的事情。
 
 
+修改虚拟机使用性能更好读的网卡
+
+找到 .vmx 文件打开修改
+```ini
+ethernet0.virtualDev = "vmxnet3"
+```
+
+确认是否修改成功，启动后
+```sh
+sudo ethtool -i ens33
+```
+会列出网卡使用的驱动
+
+
+## vmware 文件夹共享
+
+设置好以后，在 /etc/fstab 后加一行
+
+```
+.host:/win_share_to_vmlinux /home/m/win_share_to_linux fuse.vmhgfs-fuse defaults,allow_other 0 0
+```
+
+然后 `sudo mount -a` 即可看到。
 
 ## ubuntu ssh 主机与从机服务安装
 

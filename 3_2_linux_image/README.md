@@ -4,7 +4,7 @@ sort: 5
 # 系统镜像构建
 
 
-这部分的内容
+这部分的内容，镜像构建体验，不涉及代码改动，了解工具、环境，建立基本概念。
 - 一个能用的 linux 系统需要什么东西？
 - bootlader 
 - kernel 和 device tree
@@ -26,7 +26,7 @@ sort: 5
 - 系统共享库
 - 根文件系统
 
-## 系统启动流程(imx6ull)
+### 系统启动流程(imx6ull)
 
 芯片本身有 96KB ROM 和 128KB RAM，开发板上外挂了 8GB eMMC 和 512MB DDR。
 
@@ -47,7 +47,7 @@ kernel 还要执行各种初始化，如启动 MMU 等，在 `arch/arm/kernel/he
 
 这里会根据 u-boot 给的参数挂载根文件系统，然后执行根文件系统里的第一个用户进程 `init`
 
-## bootloader
+### bootloader
 
 在 linux 启动前，需要一小段代码来初始化系统。这段代码与所用机器设备有很大的相关性。linux 对 bootloader 的要求很低。最低要求：
 - 配置好 DDR
@@ -61,7 +61,7 @@ uboot 体积小，功能丰富，启动快。最终用户对 uboot 运行并不�
 
 uboot 可以调试，他的一个重要功能是在启动阶段把信息输出到控制台(通常是一个串口，因此 uboot 需要初始化一个串口)
 
-## linux kernel
+### linux kernel
 
 linux 内核是 linux 系统的底层软件。它负责管理硬件，运行用户态软件，并且负责系统的整体安全性和完整性。
 
@@ -69,7 +69,7 @@ linux 内核是 linux 系统的底层软件。它负责管理硬件，运行用�
 
 C 运行时库会把系统调用封装的更加易用。在这些封装函数中，有一些函数只是比系统调用函数稍微增加了些代码（仅仅进行参数检查和参数设置），而另一些函数则添加了额外的一些功能。如纯计算的数学库。
 
-## root filesystem
+### root filesystem
 
 根文件系统是所有文件（包括设备节点）存储的地方，这些文件以一定的文件层次结构组织在一起。通常根文件系统挂载到“/”。根文件系统包含所有的二进制文件、应用程序和数据。
 
@@ -78,16 +78,104 @@ C 运行时库会把系统调用封装的更加易用。在这些封装函数中
 
 
 
-## 环境搭建
+## 从源码到跑起来的系统
 
 imx6ull 
 
-编译工具链 Linaro GCC 4.9
+安装 vmware 虚拟机，安装 Ubuntu 22.04 系统，设置网络为桥接模式，设置高性能网卡，设置虚拟机 ip，设置 windows 共享文件夹
+
+必要的工具 open-vm-tools openssh-server
+
+安装更好用的 shell ：fish
+
+准备编译工具：Linaro GCC 4.9
 
 <https://releases.linaro.org/components/toolchain/binaries/4.9-2017.01/arm-linux-gnueabihf/>
 
-
 环境变量添加工具链路径
+
+对于 fish 这个 shell，在 `~/.config/fish/config.fish` 中保存了配置文件，每次启动时都会执行。等同 `~/.bashrc`
+
+```sh
+if status is-interactive
+    # Add linaro toolchain only if not exists
+    if not contains /home/m/ws_linux/gcc/linaro-4.9.4/bin $PATH
+        set -gx PATH $PATH /home/m/ws_linux/gcc/linaro-4.9.4/bin
+    end
+
+    # Add imxflash only if not exists
+    if not contains /home/m/ws_linux/imxflash $PATH
+        set -gx PATH $PATH /home/m/ws_linux/imxflash
+    end
+end
+```
+
+将工具链路径添加到环境变量
+
+### u-boot
+
+windows 远程到 vm-ubuntu 上，方便编辑代码，并且可以启动终端
+
+编译 uboot 需要的一些额外的工具
+```sh
+sudo apt install -y build-essential libssl-dev bison flex bc
+```
+
+编译执行的命令
+```bash
+# 清理工程
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- distclean
+
+# 使用默认配置文件配置编译选项
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- mx6ull_14x14_ddr512_emmc_defconfig
+
+# 编译
+make V=1 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j12
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j12
+```
+
+
+### kernel
+
+
+kernel 编译需要用到的工具
+```sh
+sudo apt install lzop
+```
+
+ubuntu 22.04 在编译时，会遇到 /usr/bin/ld: scripts/dtc/dtc-parser.tab.o:(.bss+0x50): multiple definition of `yylloc'; scripts/dtc/dtc-lexer.lex.o:(.bss+0x0): first defined here 的问题。ubuntu22.04 自带的 gcc 为 11.4，换成 9.5 就可以正常编译内核了。
+
+```bash
+# 安装gcc9
+sudo apt install gcc-9 g++-9
+
+# 后面的数字为赋予的优先级
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 1
+sudo update-alternatives --install /usr/bin/++ g++ /usr/bin/g++-9 1
+
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 2
+sudo update-alternatives --install /usr/bin/++ g++ /usr/bin/g++-11 2
+
+#查看优先级，选择默认的编译器，输入数字 2 切换
+sudo update-alternatives --config gcc
+sudo update-alternatives --config g++
+```
+
+
+编译 kernel 
+
+```sh
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- distclean
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- imx_alientek_emmc_defconfig
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- all -j12
+```
+
+
+
+
+
+
+
 
 
 
