@@ -55,7 +55,7 @@ sudo ethtool -i ens33
 设置好以后，在 /etc/fstab 后加一行
 
 ```
-.host:/win_share_to_vmlinux /home/m/win_share_to_linux fuse.vmhgfs-fuse defaults,allow_other 0 0
+.host:/win_share_to_vmlinux /home/m/win_share_to_vmlinux fuse.vmhgfs-fuse defaults,allow_other 0 0
 ```
 
 然后 `sudo mount -a` 即可看到。
