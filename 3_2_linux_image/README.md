@@ -80,9 +80,17 @@ C 运行时库会把系统调用封装的更加易用。在这些封装函数中
 
 ## 从源码到跑起来的系统
 
-imx6ull 
+imx6ull 开发板，安装 vmware 虚拟机，安装 Ubuntu 系统，设置网络为桥接模式，设置高性能网卡，关闭侧通道缓解提升性能，设置虚拟机 ip，设置 windows 共享文件夹
 
-安装 vmware 虚拟机，安装 Ubuntu 22.04 系统，设置网络为桥接模式，设置高性能网卡，设置虚拟机 ip，设置 windows 共享文件夹
+
+- 设置使用 vmxnet3 网卡替换 e1000 网卡
+- 设置网络为桥接模式
+- 设置固定 ip 地址
+- 关闭侧通道缓解
+- 设置 windows 共享文件夹
+
+
+
 
 必要的工具 open-vm-tools openssh-server
 
@@ -121,6 +129,12 @@ windows 远程到 vm-ubuntu 上，方便编辑代码，并且可以启动终端
 sudo apt install -y build-essential libssl-dev bison flex bc
 ```
 
+使用 menuconfig 裁剪功能需要用到的工具
+```sh
+sudo apt install libncurses5-dev libncursesw5-dev
+```
+
+
 编译执行的命令
 ```bash
 # 清理工程
@@ -134,16 +148,35 @@ make V=1 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j12
 make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j12
 ```
 
+u-boot 烧录到 SD 卡，使用 imxdownload 工具。
+
+```sh
+flash u-boot.bin /dev/sdb
+```
+
+开发板设置 SD 卡启动，连接调试串口，设置网络
+
+```sh
+=> setenv ipaddr 10.0.0.100
+=> setenv ethaddr 88:b2:77:40:8e:48
+=> setenv netmask 255.255.255.0
+=> setenv gatewayip 10.0.0.1
+=> setenv serverip 10.0.0.24
+
+saveenv
+```
+
+可以使用 ping 测试网络是否连通
+
 
 ### kernel
 
-
-kernel 编译需要用到的工具
+kernel 编译在压缩 zImage 时需要用到 lzop 工具，首先安装这个工具
 ```sh
 sudo apt install lzop
 ```
 
-ubuntu 22.04 在编译时，会遇到 /usr/bin/ld: scripts/dtc/dtc-parser.tab.o:(.bss+0x50): multiple definition of `yylloc'; scripts/dtc/dtc-lexer.lex.o:(.bss+0x0): first defined here 的问题。ubuntu22.04 自带的 gcc 为 11.4，换成 9.5 就可以正常编译内核了。
+高版本 ubuntu(22 24) 在编译时，会遇到 `/usr/bin/ld: scripts/dtc/dtc-parser.tab.o:(.bss+0x50): multiple definition of 'yylloc'; scripts/dtc/dtc-lexer.lex.o:(.bss+0x0): first defined here `的问题。高版本 ubuntu 自带的 gcc 为 11.4，换成 9.5 就可以正常编译内核了。
 
 ```bash
 # 安装gcc9
@@ -170,13 +203,79 @@ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- imx_alientek_emmc_defconfig
 make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- all -j12
 ```
 
+编译完成以后，`arch/arm/boot/dts` 会出现两个需要的东西 `zImage` 和 *.dtb 文件
+
+先设置 bootargs 
+```sh
+setenv bootargs console=ttymxc0,115200
+saveenv
+```
+
+通过 tftp 加载 kernel 和 dtb 到指定位置。
+
+ubuntu 安装 tftp 服务，
+```sh
+sudo apt install tftpd-hpa
+```
+
+安装完成后修改配置文件，`/etc/default/tftpd-hpa`，设置 tftp 目录
+
+```conf
+# /etc/default/tftpd-hpa
+
+TFTP_USERNAME="tftp"
+TFTP_DIRECTORY="/home/m/ws_linux/tftp"
+TFTP_ADDRESS=":69"
+TFTP_OPTIONS="--secure"
+```
+
+```sh
+# 重启 tftp 服务
+sudo systemctl restart tftpd-hpa
+
+# 查看 tftp 状态
+sudo systemctl status tftpd-hpa
+```
+
+易用性脚本，实现自动复制编译好的东西到tftp
+
+
+在开发板上操作
+```sh
+tftp 80800000 zImage
+tftp 83000000 imx6ull-alientek-emmc.dtb
+bootz 80800000 - 83000000
+```
+
+可以看到内核启动起来了，会提示 kernel panic
+
+### root filesystem
+
+使用 busybox 
+
+首先安装 nfs 服务
+
+sudo apt install nfs-kernel-server 
+
+makefile 中指定架构和工具链
+
+```sh
+make CROSS_COMPILE=arm-linux-gnueabihf- defconfig
+make CROSS_COMPILE=arm-linux-gnueabihf- menuconfig
+
+make CROSS_COMPILE=arm-linux-gnueabihf- -j32
+make install CONFIG_PREFIX=/home/m/ws_linux/nfs/busybox_rootfs
+```
+
+在指定的 nfs 下的 rootfs 里就会生成整个系统需要的文件，但是需要手动添加动态库。
 
 
 
+```sh
+setenv bootargs 'console=ttymxc0,115200 root=/dev/nfs nfsroot=10.0.0.24:/home/m/ws_linux/nfs/busybox_rootfs,proto=tcp,nfsvers=3 rw ip=10.0.0.100:10.0.0.24:10.0.0.1:255.255.255.0::eth0:off'
+```
 
-
-
-
+手动指定第一个运行的进程
 
 
 
