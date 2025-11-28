@@ -1,7 +1,17 @@
 ---
 sort: 4
 ---
-# linux 应用开发
+# linux 使用&应用开发
+
+记录一些 linux 发行版上做的事情，如 ubuntu，openwrt
+
+不包含 bootloader，kernel 以及驱动本身的代码的修改。
+
+- 系统编程
+- 镜像
+- 网络
+- linux 中的工具等
+
 
 linux 使用
 - 一些工具 shell、gcc、makefile、vim
