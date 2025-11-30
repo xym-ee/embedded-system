@@ -17,6 +17,7 @@ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- mx6ull_14x14_evk_emmc_defconfig
 make V=1 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j16
 ```
 
+
 同样的，也可以把上面的命令写进一个脚本。
 
 也可以在顶层 Makefile 里直接给传入的参数赋值。

@@ -7,8 +7,8 @@
 终端设置代理
 
 ```sh
-export http_proxy=http://192.168.1.181:7890
-export https_proxy=http://192.168.1.181:7890
+export http_proxy="http://Clash:s2KRAnIe@192.168.1.2:7893"
+export https_proxy="http://Clash:s2KRAnIe@192.168.1.2:7893"
 ```
 
 
@@ -37,13 +37,15 @@ chmod +x repo
 NXP 的 BSP 依赖几十个仓库，且版本组合高度固定，如果用 submodule 会非常难管理。
 
 ```sh
+# 创建工作目录
 mkdir imx-yocto-bsp
+cd imx-yocto-bsp
 
 # 可能需要代理
 # 初始化 repo 仓库，获得依赖关系
-repo init -u https://github.com/nxp-imx/imx-manifest -b imx-linux-kirkstone -m imx-5.15.71-2.2.2.xml 
+repo init -u https://github.com/nxp-imx/imx-manifest -b imx-linux-kirkstone -m imx-5.15.71-2.2.2.xml
 
-# 拉取所有源码
+# 拉取 yocto 工程源码，poky meta-imx kernel uboot
 repo sync
 ```
 
@@ -55,7 +57,7 @@ DISTRO=fsl-imx-xwayland MACHINE=imx8mp-ddr4-evk source imx-setup-release.sh -b b
 bitbake imx-image-multimedia
 ```
 
-
+bitbake core-image-minimal
 
 
 
