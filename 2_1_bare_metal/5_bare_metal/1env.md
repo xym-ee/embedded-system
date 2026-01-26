@@ -124,5 +124,39 @@ arm-none-eabi-gcc main.c -W -Wall -Wextra -Werror -Wundef -Wshadow -Wdouble-prom
 
 ## 下载
 
-使用 stlink 
+使用 jlink 下载
+
+安装好 jlink linux 版本。
+
+https://kb.segger.com/UM08001_J-Link_/_J-Trace_User_Guide
+
+https://kb.segger.com/J-Link_Commander
+
+安装好后，下载的步骤
+
+```sh
+JLinkExe
+
+connect stm32f407zg
+
+swd
+
+speed 默认
+```
+
+连接成功后下载的通用步骤
+```
+h
+loadfile xxxx.elf
+r
+g
+```
+
+关于 elf 文件，带语义的程序，
+
+hex 带地址的文本格式，
+
+bin 纯数据。无上下文的字节流
+
+
 
