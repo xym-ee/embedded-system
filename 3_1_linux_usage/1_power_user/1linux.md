@@ -114,6 +114,17 @@ UID:
 
 用户权限，用户组权限，其他用户权限。
 
+关于 ubuntu server 限制密码长度，想改一个字符的密码
+
+```sh
+sudo vi /etc/pam.d/common-password
+
+# here are the per-package modules (the "Primary" block)
+password        [success=1 default=ignore]      pam_unix.so yescrypt minlen=1
+```
+
+
+
 ## shell
 
 shell是个应用程序，接收用户输入的指令，通过系统调用传送给内核运行，呈现内核运行结果。
