@@ -46,5 +46,93 @@ UDP 数据报套接字。SOCK_DGRAM 无连接的套接字，快速传输但无�
 
 
 
+## 
+
+一条连接由 4 个东西决定
+
+```
+(src_ip, src_port, dst_ip, dst_port)
+```
+
+写一个 tcp 通信的程序
+
+```c
+/* server.c */
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
+int main()
+{
+    /* raw socket */
+    int listen_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+    /* listen socket */
+    struct sockaddr_in serv_addr;
+    memset(&serv_addr, 0, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;                         //使用IPv4地址
+    serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");     //具体的IP地址
+    serv_addr.sin_port = htons(9999);                       //端口
+
+    bind(listen_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+    listen(listen_fd, 20);
+
+    /* connected socket */
+    struct sockaddr_in clnt_addr;
+    socklen_t clnt_addr_size = sizeof(clnt_addr);
+    int fd = accept(listen_fd, (struct sockaddr*)&clnt_addr, &clnt_addr_size);
+
+    /* write fd */
+    char str[] = "This is a socket message.";
+    write(fd, str, sizeof(str));
+   
+    close(fd);
+    close(listen_fd);
+
+    return 0;
+}
+```
+
+
+```c
+/* client.c */
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+
+int main()
+{
+    int fd = socket(AF_INET, SOCK_STREAM, 0);
+
+    struct sockaddr_in serv_addr;
+    memset(&serv_addr, 0, sizeof(serv_addr));  //每个字节都用0填充
+    serv_addr.sin_family = AF_INET;  //使用IPv4地址
+    serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");  //具体的IP地址
+    serv_addr.sin_port = htons(9999);  //端口
+    connect(fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+   
+    char buffer[40];
+    read(fd, buffer, sizeof(buffer)-1);
+    printf("Message form server: %s\n", buffer);
+    close(fd);
+    return 0;
+}
+```
+
+
+
+
+
+
+
+
+
 
 
