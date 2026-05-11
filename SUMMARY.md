@@ -1,6 +1,13 @@
 # 目录
 
 - [计算机与嵌入式系统](./README.md)
+- [00 Worldview：计算、控制与 Agent OS](./00-worldview/README.md)
+  - [系统构造的五个问题](./00-worldview/01_system_questions.md)
+  - [隐含主线](./00-worldview/02_hidden_threads.md)
+  - [Agent OS：从操作系统到智能体运行时](./00-worldview/03_agent_os.md)
+  - [后续整理方式](./00-worldview/04_next_steps.md)
+  - [我的技术世界观：从计算、控制到工程系统](./00-worldview/05_computation_control_engineering.md)
+  - [从电路到社会：一个跨尺度系统观](./00-worldview/06_cross_scale_systems.md)
 - [00 系统中的 5 个问题](./00_系统中的5个问题/README.md)
 - [计算机与嵌入式开发学](./1/README.md)
   - [计算机专业与计算机课程](./1/chapter1/README.md)

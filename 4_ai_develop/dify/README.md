@@ -34,7 +34,7 @@ workflow ，做一个数据可视化的例子。
 
 工具，想法验证。
 
-dify，n8n，
+dify，n8n，langflow
 
 
 用代码开发，langchain，langgraph，模型私有化，Vllm，机器选型，Embedding模型，多模态 chatglm。
@@ -43,6 +43,27 @@ dify，n8n，
 微调算法，ML，DL，
 
 微调，蒸馏，私有化训练。
+
+
+
+## 一些思路
+
+参数提取，或者参数生成。
+
+自然语言 -> 结构化列表
+
+
+```
+x 和 linkedIn、在 Twitter 和 LinkedIn 上发布，甚至 Twitter + LinkedIn please。
+```
+
+提取出如
+```
+["Twitter", "LinkedIn"]
+```
+
+
+
 
 
 
