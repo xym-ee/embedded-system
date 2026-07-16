@@ -192,6 +192,7 @@ Claude Code 是理解 Agent 编程助手的好入口。
 
 - [概念](./1_concept.md)：LLM、token、context、prompt、tool、MCP、Agent、skill 等基础概念。
 - [AI 开发](./1.md)：早期 AI 开发相关记录。
+- [个人工作空间的软件架构设计](./5_personal_workspace_architecture.md)：把多个自治 Git 仓库、两级 `AGENTS.md`、状态文件和发布工具组合成人与 Agent 共用的持久化工作空间。
 
 ### Claude Code
 
